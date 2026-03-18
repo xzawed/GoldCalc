@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "Bash(gh auth:*)",
+      "Bash(git:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}
