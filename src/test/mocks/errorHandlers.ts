@@ -1,15 +1,13 @@
 import { http, HttpResponse } from 'msw'
 
-export const errorHandlers = [
-  http.get('*/v1/XAU', () => {
-    return HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })
-  }),
+export const goldErrorHandler = http.get('*/XAU/USD', () => {
+  return HttpResponse.json({ message: 'Unauthorized' }, { status: 401 })
+})
 
-  http.get('*/v6/*/latest/USD', () => {
-    return HttpResponse.json({ result: 'error' }, { status: 500 })
-  }),
+export const exchangeRateErrorHandler = http.get('*/v6/*/latest/USD', () => {
+  return HttpResponse.json({ result: 'error' }, { status: 429 })
+})
 
-  http.get('*/history*', () => {
-    return HttpResponse.json({ error: 'Service Unavailable' }, { status: 503 })
-  }),
-]
+export const historyErrorHandler = http.get('*/XAU/USD/:date', () => {
+  return HttpResponse.json({ message: 'Not Found' }, { status: 404 })
+})

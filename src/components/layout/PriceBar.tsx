@@ -1,22 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
-import { apiFetch } from '@/utils/api'
-import { formatKRW, formatUSD, formatChangeRate, getChangeColor } from '@/utils/format'
-import type { GoldPriceResponse } from '@/types/gold'
+import { useGoldPrice } from '@/hooks/useGoldPrice'
+import { useExchangeRate } from '@/hooks/useExchangeRate'
+import { calcPricePerGram } from '@/utils/goldCalc'
+import { formatKRW, formatUSD, formatChangeRate, getChangeColor, getChangeIcon } from '@/utils/format'
 import { Skeleton } from '@/components/ui/skeleton'
 
-function fetchCurrentPrice(): Promise<GoldPriceResponse> {
-  return apiFetch<GoldPriceResponse>(
-    `${import.meta.env.VITE_GOLD_API_URL}?apikey=${import.meta.env.VITE_GOLD_API_KEY}`
-  )
-}
-
 export function PriceBar() {
-  const { data, isLoading, isError } = useQuery<GoldPriceResponse>({
-    queryKey: ['goldPrice', 'current'],
-    queryFn: fetchCurrentPrice,
-    staleTime: 60_000,
-    refetchInterval: 60_000,
-  })
+  const { data: goldData, isLoading: goldLoading } = useGoldPrice()
+  const { data: rateData, isLoading: rateLoading } = useExchangeRate()
+
+  const isLoading = goldLoading || rateLoading
 
   if (isLoading) {
     return (
@@ -29,30 +21,32 @@ export function PriceBar() {
     )
   }
 
-  if (isError || !data) return null
+  if (!goldData || !rateData) return null
 
-  const changeColor = getChangeColor(data.changePercent ?? 0)
+  const priceKRWPerGram = Math.round(calcPricePerGram(goldData.priceUSD, rateData.exchangeRate) * 0.9999)
+  const changeColor = getChangeColor(goldData.changePercent ?? 0)
 
   return (
-    <div className="bg-muted/40 border-b px-4 py-2 text-sm">
+    <div className="bg-muted/40 border-b px-4 py-2 text-sm" data-testid="price-bar">
       <div className="container mx-auto max-w-5xl flex flex-wrap gap-x-6 gap-y-1 items-center">
         <span className="font-medium">
           금 현재가:{' '}
-          <span className="text-foreground font-bold">
-            {formatKRW(data.priceKRW ?? 0)}
+          <span className="text-foreground font-bold" data-testid="price-krw">
+            {formatKRW(priceKRWPerGram)}
             <span className="text-xs text-muted-foreground ml-1">/g</span>
           </span>
         </span>
         <span className="text-muted-foreground">
-          국제가: {formatUSD(data.priceUSD ?? 0)}/oz
+          국제가: <span data-testid="price-usd">{formatUSD(goldData.priceUSD)}</span>/oz
         </span>
-        {data.changePercent !== undefined && (
-          <span className={changeColor}>
-            {formatChangeRate(data.changePercent)}
+        {goldData.changePercent !== undefined && (
+          <span className={changeColor} data-testid="price-change" aria-label={`전일 대비 ${formatChangeRate(goldData.changePercent)}`}>
+            <span aria-hidden="true">{getChangeIcon(goldData.changePercent)}</span>{' '}
+            {formatChangeRate(goldData.changePercent)}
           </span>
         )}
         <span className="text-muted-foreground text-xs ml-auto">
-          환율: ₩{data.exchangeRate?.toLocaleString() ?? '-'}/USD
+          환율: ₩{rateData.exchangeRate.toLocaleString('ko-KR')}/USD
         </span>
       </div>
     </div>

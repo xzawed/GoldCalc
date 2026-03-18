@@ -1,6 +1,9 @@
+import { lazy, Suspense } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
-// Sprint 02 에서 구현 예정
+const GoldCalculator = lazy(() => import('./GoldCalculator'))
+
 export default function CalculatorSection() {
   return (
     <section aria-labelledby="calculator-title" data-testid="calculator-section">
@@ -9,7 +12,9 @@ export default function CalculatorSection() {
           <CardTitle id="calculator-title">금 시세 계산기</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground text-sm">계산기 기능은 Sprint 02에서 구현됩니다.</p>
+          <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+            <GoldCalculator />
+          </Suspense>
         </CardContent>
       </Card>
     </section>
