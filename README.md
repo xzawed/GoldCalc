@@ -4,12 +4,15 @@
 g(그램) / 돈 / 냥 단위로 입력하면 현재 원화 가격을 즉시 계산해주는 웹 앱입니다.
 
 [![CI](https://github.com/xzawed/GoldCalc/actions/workflows/ci.yml/badge.svg)](https://github.com/xzawed/GoldCalc/actions/workflows/ci.yml)
+[![Vercel](https://img.shields.io/badge/Vercel-배포중-black?logo=vercel)](https://goldcalc-mu.vercel.app)
+
+**🚀 프로덕션**: https://goldcalc-mu.vercel.app
 
 ---
 
 ## 현재 구현 상태
 
-Sprint 01~05 코드 작업 전부 완료. Vercel 배포는 수동 설정 필요.
+Sprint 01~05 전체 완료. Vercel 자동 배포 운영 중.
 
 - **1구역 계산기**: 실시간 금시세·환율 fetch, g/돈/냥 단위 입력, 24K/18K/14K 순도 선택, 원화 즉시 환산
 - **2구역 시세 변동**: 1주/1개월/3개월/1년 히스토리 차트(이중 Y축), 날짜별 등락 테이블, 최고·최저·평균 배지
@@ -33,7 +36,7 @@ Sprint 01  ████████████████████  완료 
 Sprint 02  ████████████████████  완료  실시간 금시세 계산기
 Sprint 03  ████████████████████  완료  시세 변동 차트 & 테이블
 Sprint 04  ████████████████████  완료  가격 예측 & 시장 신호
-Sprint 05  ████████████████████  완료  품질 완성 (Vercel 배포는 수동 설정 필요)
+Sprint 05  ████████████████████  완료  품질 완성 & Vercel 자동 배포
 ```
 
 ---
@@ -114,7 +117,7 @@ Sprint 05  ████████████████████  완료 
 | 초기 JS 번들 213kB (목표 500kB 이하) | ✅ |
 | 전체 102개 테스트 통과 | ✅ |
 | GitHub Actions CI 통과 | ✅ |
-| Vercel 프로덕션 배포 | ⏳ **수동 설정 필요** (sprint-05.md 참고) |
+| Vercel 프로덕션 배포 | ✅ https://goldcalc-mu.vercel.app |
 
 ---
 
@@ -266,10 +269,10 @@ GoldCalc/
 ## CI/CD
 
 - **CI**: GitHub Actions — `feature/**` push 및 `main` PR 시 자동 실행
-  - lint → type-check → test:coverage → build
-- **배포**: Vercel × GitHub 네이티브 연동 (수동 설정 필요 — sprint-05.md 참고)
-  - `main` 푸시 → 프로덕션 자동 배포
-  - PR 생성 → 미리보기 URL 자동 생성
+  - lint → type-check → test:coverage
+- **배포**: GitHub Actions → Vercel CLI 자동 배포
+  - `main` 푸시 → 프로덕션 자동 배포 → https://goldcalc-mu.vercel.app
+  - PR 생성 → Preview URL 자동 생성
 
 ---
 
@@ -302,7 +305,7 @@ GoldCalc/
 | `sprint-02.md` | Sprint 02 체크리스트 (완료) |
 | `sprint-03.md` | Sprint 03 체크리스트 (완료) |
 | `sprint-04.md` | Sprint 04 체크리스트 (완료) |
-| `sprint-05.md` | Sprint 05 체크리스트 (완료, Vercel 배포 수동 설정 필요) |
+| `sprint-05.md` | Sprint 05 체크리스트 (완료) |
 
 ---
 
