@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { getChangeColor, getChangeIcon } from '@/utils/format'
 import type { MarketSignal } from '@/types/gold'
@@ -9,7 +10,7 @@ interface MarketSignalsProps {
 const trendToRate = (trend: MarketSignal['trend']): number =>
   trend === 'up' ? 1 : trend === 'down' ? -1 : 0
 
-export const MarketSignals = ({ signals }: MarketSignalsProps) => {
+export const MarketSignals = memo(({ signals }: MarketSignalsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="market-signals">
       {signals.map((signal) => {
@@ -34,4 +35,4 @@ export const MarketSignals = ({ signals }: MarketSignalsProps) => {
       })}
     </div>
   )
-}
+})

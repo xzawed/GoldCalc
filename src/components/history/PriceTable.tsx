@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { formatKRW, formatUSD, formatChangeRate, getChangeColor, getChangeIcon, formatDate } from '@/utils/format'
 import { addChangeRates } from '@/utils/historyCalc'
 import type { HistoryEntry } from '@/types/gold'
@@ -6,8 +7,8 @@ interface PriceTableProps {
   entries: HistoryEntry[]
 }
 
-export function PriceTable({ entries }: PriceTableProps) {
-  const entriesWithChange = addChangeRates([...entries].reverse())
+export const PriceTable = memo(function PriceTable({ entries }: PriceTableProps) {
+  const entriesWithChange = useMemo(() => addChangeRates([...entries].reverse()), [entries])
 
   return (
     <div className="overflow-x-auto" data-testid="price-table">
@@ -43,4 +44,4 @@ export function PriceTable({ entries }: PriceTableProps) {
       </table>
     </div>
   )
-}
+})
