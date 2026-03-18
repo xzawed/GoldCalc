@@ -265,86 +265,81 @@ export function renderWithProviders(
 **테스트 목적**: 환산 공식의 수학적 정확도 검증 — 실제 금 거래 가격과 오차 없어야 함
 
 ```ts
-import { describe, test, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
-  toGrams, calcKRWperGram, calcTotal, calcKRWperDon,
-  TROY_OZ_TO_G, DON_TO_G, PURITY_RATIO
+  weightToGrams, calcPricePerGram, calcGoldPrice,
+  TROY_OZ_TO_G, DON_TO_G, NYANG_TO_G, PURITY_RATIO
 } from '../goldCalc';
 
-describe('단위 변환 — toGrams', () => {
-  test('g 단위는 그대로 반환', () => {
-    expect(toGrams(10, 'g')).toBe(10);
+describe('단위 변환 — weightToGrams', () => {
+  it('g 단위는 그대로 반환', () => {
+    expect(weightToGrams(10, 'g')).toBe(10);
   });
-  test('1돈 = 3.75g', () => {
-    expect(toGrams(1, 'don')).toBe(3.75);
+  it('1돈 = 3.75g', () => {
+    expect(weightToGrams(1, 'don')).toBe(3.75);
   });
-  test('1냥 = 37.5g', () => {
-    expect(toGrams(1, 'nyang')).toBe(37.5);
+  it('1냥 = 37.5g', () => {
+    expect(weightToGrams(1, 'nyang')).toBe(37.5);
   });
-  test('1냥 = 10돈', () => {
-    expect(toGrams(1, 'nyang')).toBe(toGrams(10, 'don'));
+  it('1냥 = 10돈', () => {
+    expect(weightToGrams(1, 'nyang')).toBe(weightToGrams(10, 'don'));
   });
-  test('소수점 입력 처리 — 0.5돈 = 1.875g', () => {
-    expect(toGrams(0.5, 'don')).toBe(1.875);
-  });
-});
-
-describe('원화/g 계산 — calcKRWperGram', () => {
-  // 검증값: (2650 / 31.1035) * 1320 = 112,536원 (반올림)
-  test('기준값 검증: $2,650/oz, 1320원/USD', () => {
-    expect(calcKRWperGram(2650, 1320)).toBe(112536);
-  });
-  test('환율이 오르면 원화 가격도 상승', () => {
-    const low = calcKRWperGram(2650, 1300);
-    const high = calcKRWperGram(2650, 1400);
-    expect(high).toBeGreaterThan(low);
-  });
-  test('금시세가 오르면 원화 가격도 상승', () => {
-    const low = calcKRWperGram(2600, 1320);
-    const high = calcKRWperGram(2700, 1320);
-    expect(high).toBeGreaterThan(low);
-  });
-  test('결과는 항상 정수 (반올림 적용)', () => {
-    const result = calcKRWperGram(2650, 1320);
-    expect(Number.isInteger(result)).toBe(true);
+  it('소수점 입력 처리 — 0.5돈 = 1.875g', () => {
+    expect(weightToGrams(0.5, 'don')).toBe(1.875);
   });
 });
 
-describe('순도 적용 — calcTotal', () => {
-  const usd = 2650, rate = 1320;
-
-  test('24K는 순도 0.9999 적용', () => {
-    const g1_24k = calcTotal(1, 'g', usd, rate, '24K');
-    const krwPerG = calcKRWperGram(usd, rate);
-    expect(g1_24k).toBe(Math.round(krwPerG * 0.9999));
+describe('원화/g 계산 — calcPricePerGram', () => {
+  // 검증값: (2650 / 31.1035) * 1380 ≈ 117,576
+  it('기준값 검증: $2,650/oz, 1380원/USD', () => {
+    const result = calcPricePerGram(2650, 1380);
+    expect(result).toBeCloseTo((2650 / TROY_OZ_TO_G) * 1380, 2);
   });
-  test('18K는 24K의 75%', () => {
-    const val24 = calcTotal(1, 'g', usd, rate, '24K');
-    const val18 = calcTotal(1, 'g', usd, rate, '18K');
+  it('환율이 오르면 원화 가격도 상승', () => {
+    const low = calcPricePerGram(2650, 1300);
+    const high = calcPricePerGram(2650, 1400);
+    expect(high).toBeGreaterThan(low);
+  });
+  it('금시세가 오르면 원화 가격도 상승', () => {
+    const low = calcPricePerGram(2600, 1320);
+    const high = calcPricePerGram(2700, 1320);
+    expect(high).toBeGreaterThan(low);
+  });
+  it('priceUSD=0이면 0 반환', () => {
+    expect(calcPricePerGram(0, 1380)).toBe(0);
+  });
+});
+
+describe('순도 적용 — calcGoldPrice', () => {
+  const usd = 2650.5, rate = 1380;
+
+  it('24K는 순도 0.9999 적용', () => {
+    const pricePerGram = calcPricePerGram(usd, rate);
+    const expected = Math.round(pricePerGram * 3.75 * PURITY_RATIO['24K']);
+    expect(calcGoldPrice(1, 'don', '24K', usd, rate)).toBe(expected);
+  });
+  it('18K는 24K의 75%', () => {
+    const val24 = calcGoldPrice(1, 'don', '24K', usd, rate);
+    const val18 = calcGoldPrice(1, 'don', '18K', usd, rate);
     // 0.75 / 0.9999 ≒ 0.7501 (근사치 허용)
-    expect(val18 / val24).toBeCloseTo(0.75 / 0.9999, 3);
+    expect(val18 / val24).toBeCloseTo(0.75 / 0.9999, 2);
   });
-  test('14K는 18K보다 낮음', () => {
-    const val18 = calcTotal(1, 'g', usd, rate, '18K');
-    const val14 = calcTotal(1, 'g', usd, rate, '14K');
+  it('14K는 18K보다 낮음', () => {
+    const val18 = calcGoldPrice(1, 'don', '18K', usd, rate);
+    const val14 = calcGoldPrice(1, 'don', '14K', usd, rate);
     expect(val14).toBeLessThan(val18);
   });
-  test('10돈 24K 계산 (대표 시나리오)', () => {
-    const result = calcTotal(10, 'don', usd, rate, '24K');
-    // 10돈 × 3.75g = 37.5g
-    const expected = Math.round(calcKRWperGram(usd, rate) * 37.5 * 0.9999);
-    expect(result).toBe(expected);
+  it('10돈 24K 계산 (대표 시나리오)', () => {
+    const pricePerGram = calcPricePerGram(usd, rate);
+    const expected = Math.round(pricePerGram * 37.5 * PURITY_RATIO['24K']);
+    expect(calcGoldPrice(10, 'don', '24K', usd, rate)).toBe(expected);
   });
-  test('0 입력 시 0 반환', () => {
-    expect(calcTotal(0, 'g', usd, rate, '24K')).toBe(0);
+  it('0 입력 시 0 반환', () => {
+    expect(calcGoldPrice(0, 'g', '24K', usd, rate)).toBe(0);
   });
-});
-
-describe('원화/돈 단가 — calcKRWperDon', () => {
-  test('원화/돈 = 원화/g × 3.75', () => {
-    const krwG = calcKRWperGram(2650, 1320);
-    const krwDon = calcKRWperDon(2650, 1320);
-    expect(krwDon).toBe(Math.round(krwG * DON_TO_G));
+  it('결과는 항상 정수 (Math.round 적용)', () => {
+    const result = calcGoldPrice(1, 'don', '24K', usd, rate);
+    expect(result).toBe(Math.round(result));
   });
 });
 ```
@@ -520,42 +515,45 @@ describe('트렌드 판단 — detectTrend', () => {
 
 ```ts
 describe('formatKRW', () => {
-  test('천 단위 콤마 + 원 단위', () => {
-    expect(formatKRW(1234567)).toBe('1,234,567원');
+  it('₩ 접두사 + 천 단위 콤마', () => {
+    expect(formatKRW(146500)).toBe('₩146,500');
   });
-  test('0원 처리', () => {
-    expect(formatKRW(0)).toBe('0원');
+  it('₩0 처리', () => {
+    expect(formatKRW(0)).toBe('₩0');
+  });
+  it('대형 숫자 콤마 처리', () => {
+    expect(formatKRW(1_000_000)).toBe('₩1,000,000');
   });
 });
 
 describe('formatChangeRate', () => {
-  test('양수 앞에 + 기호 추가', () => {
-    expect(formatChangeRate(1.23)).toBe('+1.23%');
+  it('양수 앞에 + 기호 추가', () => {
+    expect(formatChangeRate(0.85)).toBe('+0.85%');
   });
-  test('음수는 - 기호 유지', () => {
-    expect(formatChangeRate(-0.87)).toBe('-0.87%');
+  it('음수는 - 기호 유지', () => {
+    expect(formatChangeRate(-1.23)).toBe('-1.23%');
   });
-  test('0은 +0.00%', () => {
+  it('0은 +0.00%', () => {
     expect(formatChangeRate(0)).toBe('+0.00%');
   });
 });
 
 describe('getChangeColor', () => {
-  test('양수 → 빨간색 클래스 (한국 증시 관례)', () => {
-    expect(getChangeColor(1)).toBe('text-red-500');
+  it('양수 → 빨간색 클래스 (한국 증시 관례)', () => {
+    expect(getChangeColor(1)).toContain('text-red');
   });
-  test('음수 → 파란색 클래스', () => {
-    expect(getChangeColor(-1)).toBe('text-blue-500');
+  it('음수 → 파란색 클래스', () => {
+    expect(getChangeColor(-1)).toContain('text-blue');
   });
-  test('0 → 회색 클래스', () => {
-    expect(getChangeColor(0)).toBe('text-gray-500');
+  it('0 → muted 클래스', () => {
+    expect(getChangeColor(0)).toContain('muted');
   });
 });
 
 describe('getChangeIcon', () => {
-  test('양수 → ▲', () => expect(getChangeIcon(1)).toBe('▲'));
-  test('음수 → ▼', () => expect(getChangeIcon(-1)).toBe('▼'));
-  test('0 → ─',   () => expect(getChangeIcon(0)).toBe('─'));
+  it('양수 → ▲', () => expect(getChangeIcon(1)).toBe('▲'));
+  it('음수 → ▼', () => expect(getChangeIcon(-1)).toBe('▼'));
+  it('0 → ─',   () => expect(getChangeIcon(0)).toBe('─'));
 });
 ```
 
@@ -1203,12 +1201,12 @@ npm run test -- --watch
 
 ---
 
-## 9. 테스트 파일 위치 정리
+## 9. 테스트 파일 위치 정리 (실제 구현 기준)
 
 ```
 src/
 ├── test/
-│   ├── setup.ts                          # 전역 설정
+│   ├── setup.ts                          # 전역 설정 (MSW lifecycle)
 │   ├── mocks/
 │   │   ├── server.ts                     # MSW 서버
 │   │   ├── handlers.ts                   # 정상 응답 핸들러
@@ -1216,27 +1214,20 @@ src/
 │   ├── fixtures/
 │   │   └── goldData.ts                   # 고정 테스트 데이터
 │   ├── utils/
-│   │   └── renderWithProviders.tsx       # 커스텀 렌더 함수
-│   └── functional/                       # 기능 테스트
-│       ├── calculator.test.tsx           # FT-01
-│       ├── history.test.tsx              # FT-02
-│       ├── forecast.test.tsx             # FT-03
-│       ├── errorScenarios.test.tsx       # FT-04
-│       └── accessibility.test.tsx        # FT-05
-├── utils/
-│   ├── goldCalc.test.ts                  # UT-01
-│   ├── historyCalc.test.ts               # UT-02
-│   ├── forecast.test.ts                  # UT-03
-│   └── format.test.ts                    # UT-04
-├── hooks/
-│   ├── useGoldPrice.test.ts              # IT-01
-│   ├── useGoldHistory.test.ts            # IT-02
-│   └── useForecast.test.ts               # IT-03
-└── components/
-    ├── calculator/GoldCalculator.test.tsx # IT-04
-    ├── history/PriceHistory.test.tsx      # IT-05
-    └── forecast/GoldForecast.test.tsx     # IT-06
+│   │   └── renderWithProviders.tsx       # QueryClient 포함 커스텀 렌더
+│   └── functional/                       # 기능 테스트 (E2E 시나리오)
+│       ├── calculator.test.tsx           # FT-01 (10개 테스트)
+│       ├── history.test.tsx              # FT-02 (7개 테스트)
+│       └── forecast.test.tsx             # FT-03 (9개 테스트)
+└── utils/
+    ├── goldCalc.test.ts                  # UT-01 (18개 테스트)
+    ├── historyCalc.test.ts               # UT-02 (18개 테스트)
+    ├── forecast.test.ts                  # UT-03 (28개 테스트)
+    └── format.test.ts                    # UT-04 (12개 테스트)
 ```
+
+> **참고**: IT-01~IT-06 (훅·컴포넌트 통합 테스트) 및 FT-04(에러 시나리오), FT-05(접근성) 별도 파일은
+> 기능 테스트(calculator/history/forecast.test.tsx) 내에서 케이스로 통합되어 있습니다.
 
 ---
 
