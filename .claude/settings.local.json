@@ -5,7 +5,8 @@
       "Bash(cd:*)",
       "Bash(gh auth:*)",
       "Bash(git:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

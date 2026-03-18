@@ -88,10 +88,12 @@
 
 ### API 키 환경변수
 ```
-VITE_GOLD_API_KEY=
-VITE_EXCHANGE_API_KEY=
-VITE_ALPHA_VANTAGE_KEY=     # 보조 지표용 (선택)
-VITE_FRED_API_KEY=           # FRED API (선택)
+VITE_GOLD_API_KEY=              # GoldAPI.io 인증 키
+VITE_GOLD_API_URL=              # https://www.goldapi.io/api
+VITE_EXCHANGE_RATE_API_KEY=     # ExchangeRate-API 키
+VITE_EXCHANGE_RATE_API_URL=     # https://v6.exchangerate-api.com/v6
+VITE_ALPHA_VANTAGE_KEY=         # 보조 지표용 (선택)
+VITE_FRED_API_KEY=              # FRED API (선택)
 ```
 - API 키는 `.env` 파일에 저장 — `.env.example`에 키 이름만 명시하고 커밋
 - GitHub Secrets에도 동일한 이름으로 등록 (CI/CD 참고: cicd.md)
@@ -141,22 +143,23 @@ GoldCalc/
 │   │   ├── common/
 │   │   │   └── ErrorAlert.tsx   # 공통 에러 Alert (재시도 버튼 포함)
 │   │   ├── calculator/
-│   │   │   ├── GoldCalculator.tsx   # 메인 계산기 컴포넌트 (1구역)
-│   │   │   ├── UnitSelector.tsx     # g/돈/냥 단위 선택
-│   │   │   ├── PuritySelector.tsx   # 순도 선택 (24K/18K/14K)
-│   │   │   └── PriceDisplay.tsx     # 원화 환산 결과 표시
+│   │   │   ├── CalculatorSection.tsx # 1구역 진입점 (Sprint 01 플레이스홀더 → Sprint 02 완성)
+│   │   │   ├── GoldCalculator.tsx    # 메인 계산기 컴포넌트 (Sprint 02)
+│   │   │   ├── UnitSelector.tsx      # g/돈/냥 단위 선택 (Sprint 02)
+│   │   │   ├── PuritySelector.tsx    # 순도 선택 (Sprint 02)
+│   │   │   └── PriceDisplay.tsx      # 원화 환산 결과 표시 (Sprint 02)
 │   │   ├── history/
-│   │   │   ├── PriceHistory.tsx     # 시세 변동 내역 섹션 (2구역)
-│   │   │   ├── PriceChart.tsx       # Recharts 이중 Y축 차트
-│   │   │   ├── PriceTable.tsx       # 날짜별 시세 테이블
-│   │   │   ├── PriceSummary.tsx     # 최고/최저/평균 배지
-│   │   │   └── ChartSkeleton.tsx    # 차트 로딩 스켈레톤
+│   │   │   ├── HistorySection.tsx    # 2구역 진입점 (Sprint 03)
+│   │   │   ├── PriceChart.tsx        # Recharts 이중 Y축 차트 (Sprint 03)
+│   │   │   ├── PriceTable.tsx        # 날짜별 시세 테이블 (Sprint 03)
+│   │   │   ├── PriceSummary.tsx      # 최고/최저/평균 배지 (Sprint 03)
+│   │   │   └── ChartSkeleton.tsx     # 차트 로딩 스켈레톤 (Sprint 03)
 │   │   └── forecast/
-│   │       ├── GoldForecast.tsx     # 예측 섹션 (3구역)
-│   │       ├── ForecastChart.tsx    # 과거+예측 통합 차트
-│   │       ├── MarketSignals.tsx    # 시장 신호 요약 카드
-│   │       ├── TrendBadge.tsx       # 상승세/하락세 배지
-│   │       └── Disclaimer.tsx       # 면책 문구 (필수, 조건부 렌더링 금지)
+│   │       ├── ForecastSection.tsx   # 3구역 진입점 (Sprint 04)
+│   │       ├── ForecastChart.tsx     # 과거+예측 통합 차트 (Sprint 04)
+│   │       ├── MarketSignals.tsx     # 시장 신호 요약 카드 (Sprint 04)
+│   │       ├── TrendBadge.tsx        # 상승세/하락세 배지 (Sprint 04)
+│   │       └── Disclaimer.tsx        # 면책 문구 — 항상 렌더링, 조건부 금지 (Sprint 04)
 │   ├── hooks/
 │   │   ├── useGoldPrice.ts          # 현재 금시세 fetch (TanStack Query)
 │   │   ├── useGoldHistory.ts        # 기간별 히스토리 fetch (TanStack Query)
@@ -200,7 +203,9 @@ GoldCalc/
 - 계산 로직은 `utils/goldCalc.ts`에 순수 함수로 분리 — 컴포넌트에 직접 작성 금지
 - API 호출은 TanStack Query 훅으로만 처리 — 컴포넌트에서 직접 fetch / useEffect fetch 금지
 - 소수점은 원화 표시 시 원 단위 반올림 (Math.round)
+- 원화 표시 형식: `₩146,500` (₩ 접두사 + toLocaleString('ko-KR') 천 단위 콤마)
 - 숫자 표시는 `toLocaleString('ko-KR')` 사용하여 천 단위 콤마
+- QueryClient 기본 staleTime: 60초, retry: 2회
 - API 에러 시 TanStack Query의 마지막 캐시값 유지 + ErrorAlert 표시
 - `.env` 파일은 절대 커밋하지 않음
 
