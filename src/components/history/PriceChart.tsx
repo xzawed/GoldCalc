@@ -7,9 +7,10 @@ import type { HistoryEntry } from '@/types/gold'
 
 interface PriceChartProps {
   entries: HistoryEntry[]
+  metalName?: string
 }
 
-export function PriceChart({ entries }: PriceChartProps) {
+export function PriceChart({ entries, metalName = '금' }: PriceChartProps) {
   const data = entries.map(e => ({
     date: e.date,
     usd: e.priceUSD,
@@ -17,7 +18,7 @@ export function PriceChart({ entries }: PriceChartProps) {
   }))
 
   return (
-    <div role="img" aria-label="금시세 차트" data-testid="price-chart">
+    <div role="img" aria-label={`${metalName}시세 차트`} data-testid="price-chart">
       <ResponsiveContainer width="100%" height={280}>
         <ComposedChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />

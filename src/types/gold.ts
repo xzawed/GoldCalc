@@ -1,8 +1,23 @@
+// 자산 종류
+export type Metal = 'gold' | 'silver'
+
+// 시세 소스
+export type PriceSource = 'international' | 'domestic'
+
+// 자산 탭 (UI 네비게이션용)
+export type AssetTab = 'intl-gold' | 'intl-silver' | 'domestic-gold'
+
 // 무게 단위
 export type WeightUnit = 'g' | 'don' | 'nyang'
 
-// 순도
-export type Purity = '24K' | '18K' | '14K'
+// 금 순도
+export type GoldPurity = '24K' | '18K' | '14K'
+
+// 은 순도
+export type SilverPurity = '999' | '925' | '900' | '800'
+
+// 통합 순도 (기존 호환 + 은 확장)
+export type Purity = GoldPurity | SilverPurity
 
 // 기간 탭
 export type Period = '1W' | '1M' | '3M' | '1Y'
@@ -10,21 +25,40 @@ export type Period = '1W' | '1M' | '3M' | '1Y'
 // 예측 기간
 export type ForecastDays = 7 | 30
 
-// 현재 금시세 — 내부 정규화 구조 (API 응답 변환 후)
-export interface GoldPriceResponse {
+// 현재 시세 — 국제 금/은 공통
+export interface MetalPriceResponse {
+  metal: Metal
   priceUSD: number        // USD/troy oz
-  priceKRW: number        // 원화/g (24K 기준, 계산됨)
+  priceKRW: number        // 원화/g (최고순도 기준, 계산됨)
   exchangeRate: number    // USD/KRW 환율
   changePercent?: number  // 전일 대비 등락률 (%)
   updatedAt?: string      // ISO 8601 갱신 시각
+}
+
+// 기존 호환 별칭
+export type GoldPriceResponse = MetalPriceResponse
+
+// 국내 금시세 응답 (data.go.kr KRX 금시장)
+export interface DomesticGoldPriceResponse {
+  priceKRW: number        // 원화/g (KRX 금시장 기준)
+  changePercent?: number  // 전일 대비 등락률 (%)
+  volume?: number         // 거래량
+  updatedAt?: string      // 기준 일시
 }
 
 // 히스토리 항목
 export interface HistoryEntry {
   date: string            // 'YYYY-MM-DD'
   priceUSD: number        // USD/troy oz
-  priceKRW: number        // 원화/g (24K 기준)
+  priceKRW: number        // 원화/g (최고순도 기준)
   volume?: number         // 거래량 (선택)
+}
+
+// 국내금 히스토리 항목
+export interface DomesticHistoryEntry {
+  date: string            // 'YYYY-MM-DD'
+  priceKRW: number        // 원화/g (KRX 기준)
+  volume?: number         // 거래량
 }
 
 // 예측 포인트
@@ -50,3 +84,17 @@ export interface PeriodSummary {
   lowest: HistoryEntry
   averageKRW: number      // 원화/g 평균
 }
+
+// 자산 탭 설정
+export interface AssetTabConfig {
+  key: AssetTab
+  label: string
+  metal: Metal
+  source: PriceSource
+}
+
+export const ASSET_TABS: AssetTabConfig[] = [
+  { key: 'intl-gold', label: '국제 금', metal: 'gold', source: 'international' },
+  { key: 'intl-silver', label: '국제 은', metal: 'silver', source: 'international' },
+  { key: 'domestic-gold', label: '국내 금', metal: 'gold', source: 'domestic' },
+]

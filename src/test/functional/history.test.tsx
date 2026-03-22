@@ -56,6 +56,6 @@ describe('HistorySection', () => {
 
   it('renders section title', () => {
     renderWithProviders(<HistorySection />)
-    expect(screen.getByText('날짜별 시세 변동')).toBeInTheDocument()
+    expect(screen.getByText('금 날짜별 시세 변동')).toBeInTheDocument()
   })
 })

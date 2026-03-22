@@ -1,9 +1,9 @@
-# GoldCalc - 국제 금시세 원화 환산 계산기
+# GoldCalc - 귀금속 시세 계산기
 
 ## 프로젝트 개요
 
-국제 금시세(USD/troy oz)를 실시간 환율로 원화(KRW)로 환산하여,
-사용자가 g(그램) 또는 돈 단위로 금의 무게를 입력하면 현재 원화 가격을 보여주는 웹 앱.
+국제 금시세·은시세(USD/troy oz) 및 국내 금시세(KRX)를 실시간 환율로 원화(KRW)로 환산하여,
+사용자가 g(그램) 또는 돈 단위로 귀금속의 무게를 입력하면 현재 원화 가격을 보여주는 웹 앱.
 
 ## 기술 스택
 
@@ -32,39 +32,57 @@
 | 1 냥 | 37.5 g (= 10돈) |
 | 1 관 | 3,750 g (= 1000돈) |
 
+### 은 순도
+
+| 순도 | 함량 |
+|------|------|
+| 999 | 순은 99.9% |
+| 925 | 스털링 실버 92.5% |
+| 900 | 90% |
+| 800 | 80% |
+
 ### 환산 공식
 
 ```
 금 1g 원화 가격 = (국제 금시세 USD/oz ÷ 31.1035) × USD/KRW 환율
 금 1돈 원화 가격 = 금 1g 원화 가격 × 3.75
+은 1g 원화 가격 = (국제 은시세 USD/oz ÷ 31.1035) × USD/KRW 환율
 ```
 
 ### 주요 개념
 
 - **국제 금시세**: 런던 금시장 기준 USD/troy oz (LBMA Gold Price)
+- **국제 은시세**: USD/troy oz (XAG)
+- **국내 금시세**: KRX 금시장 기준가 (원/g)
 - **환율**: USD/KRW 실시간 환율
 - **순도**: 24K(순금 99.99%), 18K(75%), 14K(58.3%) — 선택 옵션으로 제공
 - **거래 종류**: 살 때(매도가), 팔 때(매입가) 구분 — 스프레드 차이 존재
 
 ## 주요 기능
 
+### 자산 탭 네비게이션
+- **[국제 금] [국제 은] [국내 금]** 탭으로 자산 전환
+- 선택된 탭에 따라 아래 1~3구역이 해당 자산 데이터로 렌더링
+- 국내 금은 3구역(예측) 미제공
+
 ### 1구역 — 계산기 (상단)
-1. **실시간 시세 조회**: 외부 API로 현재 금시세 + 환율 fetch
+1. **실시간 시세 조회**: 외부 API로 현재 금/은시세 + 환율 fetch
 2. **단위 선택 입력**: g / 돈 / 냥 탭
-3. **순도 선택**: 24K / 18K / 14K
+3. **순도 선택**: 금 — 24K / 18K / 14K, 은 — 999 / 925 / 900 / 800
 4. **원화 환산 결과 표시**: 입력값에 따라 즉시 계산
 5. **시세 업데이트 시각 표시**: 마지막 조회 시간
 
 ### 2구역 — 날짜별 시세 변동 내역 (중단)
-6. **기간별 금시세 히스토리 차트**: 1주 / 1개월 / 3개월 / 1년 탭 선택
+6. **기간별 시세 히스토리 차트**: 1주 / 1개월 / 3개월 / 1년 탭 선택
    - 라인 차트로 USD/oz 및 원화/g 동시 표시 (이중 Y축)
+   - 국내 금: 원/g 단일 Y축
    - 차트 라이브러리: Recharts ComposedChart
-7. **일별 시세 테이블**: 날짜 / 국제금시세(USD/oz) / 환율(USD/KRW) / 원화/g / 전일 대비 등락 표시
+7. **일별 시세 테이블**: 날짜 / 시세 / 환율 / 원화/g / 전일 대비 등락 표시
    - 등락은 색상+아이콘으로 구분 (상승: 빨강▲, 하락: 파랑▼ — 한국 증시 관례)
 8. **최고가 / 최저가 / 평균가** 요약 배지 표시
 
-### 3구역 — 금시세 예측 (하단)
-9. **단기 예측 표시**: 향후 7일 / 30일 예측 금시세 트렌드 차트
+### 3구역 — 시세 예측 (하단, 국제 금/은만)
+9. **단기 예측 표시**: 향후 7일 / 30일 예측 시세 트렌드 차트
    - 과거 실제값(실선) + 예측값(점선) + 신뢰 구간(반투명 영역)
 10. **예측 방법론 표기**: MA5/MA20 이동평균 + 선형 회귀 기반
 11. **예측 면책 문구 필수 표시**: 항상 렌더링, 조건부/숨김 처리 절대 금지
@@ -81,6 +99,14 @@
 - [ExchangeRate-API](https://www.exchangerate-api.com/)
   - `GET https://v6.exchangerate-api.com/v6/{API_KEY}/latest/USD`
 
+### 은시세
+- [gold-api.com](https://gold-api.com/) — 무료, 인증 불필요
+  - 현재가: `GET https://api.gold-api.com/price/XAG`
+
+### 국내 금시세
+- [data.go.kr 공공데이터포털](https://www.data.go.kr/) — 무료, serviceKey 필요
+  - Vercel Serverless Function 프록시 경유: `/api/domestic-gold`
+
 ### 예측용 보조 지표 (선택)
 - 달러 인덱스(DXY), VIX: [Alpha Vantage](https://www.alphavantage.co/) 무료 플랜
 - 미국 국채 10년물 금리: FRED API
@@ -94,16 +120,20 @@ VITE_EXCHANGE_RATE_API_KEY=     # ExchangeRate-API 키
 VITE_EXCHANGE_RATE_API_URL=     # https://v6.exchangerate-api.com/v6
 VITE_ALPHA_VANTAGE_KEY=         # 보조 지표용 (선택)
 VITE_FRED_API_KEY=              # FRED API (선택)
+DATA_GO_KR_API_KEY=             # 공공데이터포털 serviceKey (Vercel 서버사이드 전용)
 ```
 - API 키는 `.env` 파일에 저장 — `.env.example`에 키 이름만 명시하고 커밋
-- GitHub Secrets에도 동일한 이름으로 등록 (CI/CD 참고: cicd.md)
+- GitHub Secrets에도 동일한 이름으로 등록 (CI/CD 참고: docs/05-cicd.md)
 
 ## 페이지 레이아웃 구조
 
 ```
 ┌─────────────────────────────────────────┐
+│  [국제 금] [국제 은] [국내 금]  ← 자산 탭  │
+├─────────────────────────────────────────┤
+│  (선택된 탭에 따라 아래 구역 렌더링)       │
 │  [1구역] 계산기                          │
-│  현재 금시세 + 단위/순도 선택 + 원화 환산  │
+│  현재 시세 + 단위/순도 선택 + 원화 환산    │
 ├─────────────────────────────────────────┤
 │  [2구역] 날짜별 시세 변동 내역            │
 │  기간 탭: 1주 | 1개월 | 3개월 | 1년      │
@@ -115,7 +145,7 @@ VITE_FRED_API_KEY=              # FRED API (선택)
 │  │  날짜별 시세 테이블 (등락 색상)   │    │
 │  └─────────────────────────────────┘    │
 ├─────────────────────────────────────────┤
-│  [3구역] 금시세 예측                     │
+│  [3구역] 시세 예측 (국제 금/은만)         │
 │  ┌─────────────────────────────────┐    │
 │  │  과거(실선) + 예측(점선+신뢰구간) │    │
 │  └─────────────────────────────────┘    │
@@ -132,11 +162,14 @@ GoldCalc/
 │   ├── workflows/
 │   │   └── ci.yml               # PR 검증 (lint + type-check + test + build)
 │   └── pull_request_template.md # PR 체크리스트 템플릿
+├── api/
+│   └── domestic-gold.ts         # Vercel Serverless Function 프록시 (국내 금시세)
 ├── vercel.json                  # Vercel SPA 라우팅 rewrite 설정
 ├── src/
 │   ├── components/
 │   │   ├── layout/
 │   │   │   ├── Header.tsx       # 앱 헤더
+│   │   │   ├── AssetNav.tsx     # 자산 탭 네비게이션 ([국제 금][국제 은][국내 금])
 │   │   │   ├── PriceBar.tsx     # 현재 시세 요약 바
 │   │   │   ├── OfflineBanner.tsx # 오프라인 감지 배너
 │   │   │   └── Footer.tsx       # 푸터
@@ -145,6 +178,7 @@ GoldCalc/
 │   │   ├── calculator/
 │   │   │   ├── CalculatorSection.tsx # 1구역 진입점 (Sprint 01 플레이스홀더 → Sprint 02 완성)
 │   │   │   ├── GoldCalculator.tsx    # 메인 계산기 컴포넌트 (Sprint 02)
+│   │   │   ├── MetalCalculator.tsx   # 금/은 공통 계산기
 │   │   │   ├── UnitSelector.tsx      # g/돈/냥 단위 선택 (Sprint 02)
 │   │   │   ├── PuritySelector.tsx    # 순도 선택 (Sprint 02)
 │   │   │   └── PriceDisplay.tsx      # 원화 환산 결과 표시 (Sprint 02)
@@ -154,6 +188,8 @@ GoldCalc/
 │   │   │   ├── PriceTable.tsx        # 날짜별 시세 테이블 (Sprint 03)
 │   │   │   ├── PriceSummary.tsx      # 최고/최저/평균 배지 (Sprint 03)
 │   │   │   └── ChartSkeleton.tsx     # 차트 로딩 스켈레톤 (Sprint 03)
+│   │   ├── domestic/
+│   │   │   └── DomesticGoldSection.tsx # 국내금 전용 섹션
 │   │   └── forecast/
 │   │       ├── ForecastSection.tsx   # 3구역 진입점 (Sprint 04)
 │   │       ├── ForecastChart.tsx     # 과거+예측 통합 차트 (Sprint 04)
@@ -163,12 +199,17 @@ GoldCalc/
 │   ├── hooks/
 │   │   ├── useGoldPrice.ts          # 현재 금시세 fetch (TanStack Query)
 │   │   ├── useGoldHistory.ts        # 기간별 히스토리 fetch (TanStack Query)
+│   │   ├── useSilverPrice.ts        # 현재 은시세 fetch (TanStack Query)
+│   │   ├── useSilverHistory.ts      # 기간별 은시세 히스토리 fetch (TanStack Query)
+│   │   ├── useDomesticGoldPrice.ts  # 국내 금시세 fetch (TanStack Query)
+│   │   ├── useDomesticGoldHistory.ts # 국내 금시세 히스토리 fetch (TanStack Query)
 │   │   ├── useExchangeRate.ts       # 환율 fetch (TanStack Query)
 │   │   ├── useForecast.ts           # 예측 데이터 계산 (useMemo 기반)
 │   │   ├── useMarketSignals.ts      # 시장 신호 fetch (TanStack Query)
 │   │   └── useOnlineStatus.ts       # 네트워크 온/오프라인 감지
 │   ├── utils/
-│   │   ├── goldCalc.ts              # 환산 계산 순수 함수
+│   │   ├── metalCalc.ts             # 통합 계산 유틸 (금/은 환산 순수 함수)
+│   │   ├── goldCalc.ts              # re-export 래퍼 (metalCalc.ts 호환)
 │   │   ├── historyCalc.ts           # 등락률·최고/최저/평균 계산
 │   │   ├── forecast.ts              # MA/선형회귀 예측 알고리즘
 │   │   ├── format.ts                # 숫자·날짜 포맷 유틸
@@ -190,17 +231,21 @@ GoldCalc/
 ├── .env                             # API 키 (git 제외)
 ├── .env.example                     # API 키 템플릿 (git 포함)
 ├── CLAUDE.md
-├── cicd.md
-├── prd.md
-├── skills.md
-├── techstack.md
-└── testing.md
+├── docs/
+│   ├── 01-prd.md                # 제품 요구사항
+│   ├── 02-techstack.md          # 기술 스택 선정 근거
+│   ├── 03-skills.md             # 구현 패턴 및 코드 예시
+│   ├── 04-testing.md            # 테스트 전략 및 케이스 명세
+│   ├── 05-cicd.md               # CI/CD 파이프라인
+│   ├── 06~10-sprint-01~05.md    # Sprint별 구현 체크리스트
+│   ├── 11-decisions.md          # 의사결정 필요 사항
+│   └── 12-api-key-guide.md     # API 키 발급 가이드
 ```
 
 ## 개발 규칙
 
 ### 공통
-- 계산 로직은 `utils/goldCalc.ts`에 순수 함수로 분리 — 컴포넌트에 직접 작성 금지
+- 계산 로직은 `utils/metalCalc.ts`에 순수 함수로 분리 — 컴포넌트에 직접 작성 금지
 - API 호출은 TanStack Query 훅으로만 처리 — 컴포넌트에서 직접 fetch / useEffect fetch 금지
 - 소수점은 원화 표시 시 원 단위 반올림 (Math.round)
 - 원화 표시 형식: `₩146,500` (₩ 접두사 + toLocaleString('ko-KR') 천 단위 콤마)
@@ -224,7 +269,7 @@ GoldCalc/
 
 ### 테스트
 - 순수 함수(`utils/`)는 단위 테스트 커버리지 100% 목표
-- 모든 테스트 가능 컴포넌트에 `data-testid` 속성 필수 추가 (testing.md 참고)
+- 모든 테스트 가능 컴포넌트에 `data-testid` 속성 필수 추가 (docs/04-testing.md 참고)
 - API 호출 테스트는 반드시 MSW 모킹 사용 — 실제 API 호출 금지
 - PR 생성 시 GitHub Actions CI가 자동으로 테스트 실행 (cicd.md 참고)
 
@@ -249,16 +294,18 @@ npm run type-check    # TypeScript 타입 검사
 - **자동 배포**: Vercel 대시보드에서 GitHub 저장소 연결 → main push 시 자동 프로덕션 배포
 - **PR 프리뷰**: PR 생성 시 Vercel이 자동으로 프리뷰 URL 생성 후 PR 코멘트에 등록
 - **CI 검증**: GitHub Actions(`ci.yml`)가 PR 시 lint + type-check + test + build 자동 실행
-- **SPA 라우팅**: 프로젝트 루트 `vercel.json` 필수 (cicd.md 섹션 4 참고)
-- **상세 설정**: `cicd.md` 참고
+- **SPA 라우팅**: 프로젝트 루트 `vercel.json` 필수 (docs/05-cicd.md 섹션 4 참고)
+- **상세 설정**: `docs/05-cicd.md` 참고
 
 ## 관련 문서
 
 | 문서 | 내용 |
 |------|------|
-| `prd.md` | 제품 요구사항 (기능/비기능) |
-| `techstack.md` | 기술 스택 선정 근거 |
-| `skills.md` | 구현 패턴 및 코드 예시 |
-| `testing.md` | 테스트 전략 및 케이스 명세 |
-| `cicd.md` | CI/CD 파이프라인 및 GitHub 연동 |
-| `sprint-01~05.md` | Sprint별 구현 체크리스트 |
+| `docs/01-prd.md` | 제품 요구사항 (기능/비기능) |
+| `docs/02-techstack.md` | 기술 스택 선정 근거 |
+| `docs/03-skills.md` | 구현 패턴 및 코드 예시 |
+| `docs/04-testing.md` | 테스트 전략 및 케이스 명세 |
+| `docs/05-cicd.md` | CI/CD 파이프라인 및 GitHub 연동 |
+| `docs/06~10-sprint-*.md` | Sprint별 구현 체크리스트 |
+| `docs/11-decisions.md` | 은시세·국내금시세 확장 의사결정 사항 |
+| `docs/12-api-key-guide.md` | API 키 발급 가이드 (비개발자용) |

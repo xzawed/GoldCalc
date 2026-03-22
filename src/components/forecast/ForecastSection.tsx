@@ -8,15 +8,27 @@ import { MarketSignals } from './MarketSignals'
 import { TrendBadge } from './TrendBadge'
 import { Disclaimer } from './Disclaimer'
 import { useGoldHistory } from '@/hooks/useGoldHistory'
+import { useSilverHistory } from '@/hooks/useSilverHistory'
 import { useExchangeRate } from '@/hooks/useExchangeRate'
 import { useMarketSignals } from '@/hooks/useMarketSignals'
 import { useForecast } from '@/hooks/useForecast'
+import { METAL_LABELS } from '@/utils/metalCalc'
 import { format } from 'date-fns'
-import type { ForecastDays } from '@/types/gold'
+import type { ForecastDays, Metal } from '@/types/gold'
 
-function ForecastContent({ days }: { days: ForecastDays }) {
+interface ForecastSectionProps {
+  metal?: Metal
+}
+
+function ForecastContent({ days, metal }: { days: ForecastDays; metal: Metal }) {
   const { data: rateData } = useExchangeRate()
-  const { data: history = [], isLoading, isError } = useGoldHistory('3M', rateData?.exchangeRate ?? 0)
+  const exchangeRate = rateData?.exchangeRate ?? 0
+
+  const goldHistory = useGoldHistory('3M', exchangeRate)
+  const silverHistory = useSilverHistory('3M', exchangeRate)
+
+  const query = metal === 'gold' ? goldHistory : silverHistory
+  const { data: history = [], isLoading, isError } = query
   const { forecastPoints, trend } = useForecast(history, days)
   const { data: signals } = useMarketSignals()
 
@@ -44,14 +56,15 @@ function ForecastContent({ days }: { days: ForecastDays }) {
   )
 }
 
-export default function ForecastSection() {
+export default function ForecastSection({ metal = 'gold' }: ForecastSectionProps) {
   const [days, setDays] = useState<ForecastDays>(7)
+  const metalName = METAL_LABELS[metal]
 
   return (
     <section aria-labelledby="forecast-title" data-testid="forecast-section">
       <Card>
         <CardHeader>
-          <CardTitle id="forecast-title">금시세 예측</CardTitle>
+          <CardTitle id="forecast-title">{metalName}시세 예측</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Tabs value={String(days)} onValueChange={(v) => setDays(Number(v) as ForecastDays)}>
@@ -60,13 +73,13 @@ export default function ForecastSection() {
               <TabsTrigger value="30" data-testid="forecast-tab-30">30일</TabsTrigger>
             </TabsList>
             <TabsContent value="7">
-              <ForecastContent days={7} />
+              <ForecastContent days={7} metal={metal} />
             </TabsContent>
             <TabsContent value="30">
-              <ForecastContent days={30} />
+              <ForecastContent days={30} metal={metal} />
             </TabsContent>
           </Tabs>
-          <Disclaimer />
+          <Disclaimer metal={metal} />
         </CardContent>
       </Card>
     </section>

@@ -5,18 +5,19 @@ import type { HistoryEntry } from '@/types/gold'
 
 interface PriceTableProps {
   entries: HistoryEntry[]
+  metalName?: string
 }
 
-export const PriceTable = memo(function PriceTable({ entries }: PriceTableProps) {
+export const PriceTable = memo(function PriceTable({ entries, metalName = '금' }: PriceTableProps) {
   const entriesWithChange = useMemo(() => addChangeRates([...entries].reverse()), [entries])
 
   return (
     <div className="overflow-x-auto" data-testid="price-table">
-      <table className="w-full text-sm" role="table" aria-label="날짜별 금시세">
+      <table className="w-full text-sm" role="table" aria-label={`날짜별 ${metalName}시세`}>
         <thead>
           <tr className="border-b text-muted-foreground text-left">
             <th className="pb-2 pr-4 font-medium">날짜</th>
-            <th className="pb-2 pr-4 font-medium text-right">국제금시세(USD/oz)</th>
+            <th className="pb-2 pr-4 font-medium text-right">국제{metalName}시세(USD/oz)</th>
             <th className="pb-2 pr-4 font-medium text-right">원화/g</th>
             <th className="pb-2 font-medium text-right">전일 대비</th>
           </tr>
