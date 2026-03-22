@@ -78,6 +78,30 @@
 
 ---
 
+## 5. 국내 은시세 구현 방식 (확정)
+
+**결정일**: 2026-03-23
+
+### 배경
+- KRX(한국거래소)에는 금 현물 시장만 존재하며 은 현물 시장이 없음
+- data.go.kr 공공데이터포털에 은시세 전용 API 없음
+- 국내 귀금속 소매 업계에서 "국내 은시세"는 국제 XAG/USD를 당일 환율로 환산한 가격을 통용함
+
+### 결정
+- **국내 은시세 = 국제 XAG/USD × USD/KRW 환율** 방식으로 구현
+- 별도 API 불필요 — 기존 `useSilverPrice` + `useExchangeRate` 훅 재활용
+- `DomesticSilverSection.tsx` 신규 생성 (DomesticGoldSection과 동일 구조)
+- 면책 안내 문구에 "KRX 은 현물 시장 없음, 국제 시세 환율 환산 기준" 명시
+- 예측(3구역) 미제공 — 국내 금 탭과 동일한 정책 유지
+
+### 구현된 파일
+- `src/components/domestic/DomesticSilverSection.tsx` (신규)
+- `src/types/gold.ts` — `AssetTab` 에 `'domestic-silver'` 추가, `ASSET_TABS` 4번째 항목 추가
+- `src/components/layout/AssetNav.tsx` — `grid-cols-3` → `grid-cols-4`
+- `src/App.tsx` — `domestic-silver` 탭 분기 처리
+
+---
+
 ## 완료 후
 
 위 항목 처리가 완료되면 알려주세요. 특히:

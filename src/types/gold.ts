@@ -5,7 +5,7 @@ export type Metal = 'gold' | 'silver'
 export type PriceSource = 'international' | 'domestic'
 
 // 자산 탭 (UI 네비게이션용)
-export type AssetTab = 'intl-gold' | 'intl-silver' | 'domestic-gold'
+export type AssetTab = 'intl-gold' | 'intl-silver' | 'domestic-gold' | 'domestic-silver'
 
 // 무게 단위
 export type WeightUnit = 'g' | 'don' | 'nyang'
@@ -97,4 +97,5 @@ export const ASSET_TABS: AssetTabConfig[] = [
   { key: 'intl-gold', label: '국제 금', metal: 'gold', source: 'international' },
   { key: 'intl-silver', label: '국제 은', metal: 'silver', source: 'international' },
   { key: 'domestic-gold', label: '국내 금', metal: 'gold', source: 'domestic' },
+  { key: 'domestic-silver', label: '국내 은', metal: 'silver', source: 'domestic' },
 ]

@@ -12,6 +12,7 @@ const CalculatorSection = lazy(() => import('@/components/calculator/CalculatorS
 const HistorySection = lazy(() => import('@/components/history/HistorySection'))
 const ForecastSection = lazy(() => import('@/components/forecast/ForecastSection'))
 const DomesticGoldSection = lazy(() => import('@/components/domestic/DomesticGoldSection'))
+const DomesticSilverSection = lazy(() => import('@/components/domestic/DomesticSilverSection'))
 
 function SectionSkeleton() {
   return (
@@ -26,7 +27,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<AssetTab>('intl-gold')
 
   const tabConfig = ASSET_TABS.find((t) => t.key === activeTab)!
-  const isDomestic = tabConfig.source === 'domestic'
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -35,9 +35,13 @@ export default function App() {
       <PriceBar activeTab={activeTab} />
       <AssetNav activeTab={activeTab} onChange={setActiveTab} />
       <main className="flex-1 container mx-auto max-w-5xl px-4 py-6 space-y-8">
-        {isDomestic ? (
+        {activeTab === 'domestic-gold' ? (
           <Suspense fallback={<SectionSkeleton />}>
             <DomesticGoldSection />
+          </Suspense>
+        ) : activeTab === 'domestic-silver' ? (
+          <Suspense fallback={<SectionSkeleton />}>
+            <DomesticSilverSection />
           </Suspense>
         ) : (
           <>
