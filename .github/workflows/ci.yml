@@ -52,51 +52,16 @@ jobs:
           path: coverage/
           retention-days: 7
 
-  deploy-preview:
-    name: Deploy Preview
-    needs: ci
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Deploy to Vercel (Preview)
-        run: vercel deploy --token ${{ secrets.VERCEL_TOKEN }}
+      - name: Build
+        run: npm run build
         env:
-          VERCEL_ORG_ID: team_IyShhEHO0j8L0gEMVlldsnpK
-          VERCEL_PROJECT_ID: prj_MWmdrb56zHVL26ltBM1raQeDpADk
+          VITE_GOLD_API_KEY: test-key
+          VITE_GOLD_API_URL: https://www.goldapi.io/api
+          VITE_EXCHANGE_RATE_API_KEY: test-key
+          VITE_EXCHANGE_RATE_API_URL: https://v6.exchangerate-api.com/v6
+          VITE_ALPHA_VANTAGE_KEY: test-key
+          VITE_FRED_API_KEY: test-key
 
-  deploy-production:
-    name: Deploy Production
-    needs: ci
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://goldcalc-mu.vercel.app
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v5
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Deploy to Vercel (Production)
-        run: vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: team_IyShhEHO0j8L0gEMVlldsnpK
-          VERCEL_PROJECT_ID: prj_MWmdrb56zHVL26ltBM1raQeDpADk
+# Railway 배포는 GitHub 레포 연동으로 자동 처리됨
+# - main push → Railway 프로덕션 자동 배포
+# - PR 생성 → Railway PR Environment 자동 생성 (Railway 대시보드에서 활성화 필요)

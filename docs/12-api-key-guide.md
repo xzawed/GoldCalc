@@ -10,7 +10,7 @@
 1. [은시세 API — 키 발급 불필요 (확인만 하면 됩니다)](#1-은시세-api--확인만-하면-됩니다)
 2. [국내 금시세 API — 공공데이터포털 키 발급](#2-국내-금시세-api--공공데이터포털-키-발급)
 3. [발급받은 키를 프로젝트에 등록하기](#3-발급받은-키를-프로젝트에-등록하기)
-4. [Vercel(배포 서버)에 키 등록하기](#4-vercel배포-서버에-키-등록하기)
+4. [Railway(배포 서버)에 키 등록하기](#4-railway배포-서버에-키-등록하기)
 
 ---
 
@@ -142,36 +142,37 @@
 
 ---
 
-## 4. Vercel(배포 서버)에 키 등록하기
+## 4. Railway(배포 서버)에 키 등록하기
 
-웹사이트를 인터넷에 공개(배포)하려면, Vercel에도 키를 등록해야 합니다.
+웹사이트를 인터넷에 공개(배포)하려면, Railway에도 키를 등록해야 합니다.
 로컬(내 컴퓨터)에서만 테스트할 거라면 이 단계는 나중에 해도 됩니다.
 
 ### 방법
 
-1. 브라우저에서 Vercel 대시보드로 이동합니다:
+1. 브라우저에서 Railway 대시보드로 이동합니다:
    ```
-   https://vercel.com/dashboard
+   https://railway.app/dashboard
    ```
 
 2. 로그인 후, GoldCalc 프로젝트를 클릭합니다
 
-3. 상단 탭에서 **"Settings"** 를 클릭합니다
+3. 서비스 카드를 클릭한 뒤 상단 탭에서 **"Variables"** 를 클릭합니다
 
-4. 왼쪽 메뉴에서 **"Environment Variables"** 를 클릭합니다
+4. **"New Variable"** 버튼을 클릭하여 아래 변수들을 하나씩 추가합니다:
 
-5. 새 환경변수를 추가합니다:
-   - **Key** 란에: `DATA_GO_KR_API_KEY`
-   - **Value** 란에: 공공데이터포털에서 발급받은 키를 붙여넣습니다
-   - **Environment** 체크박스: `Production`, `Preview`, `Development` 모두 체크
-   - **"Save"** 버튼을 클릭합니다
+   | 변수명 | 값 |
+   |--------|-----|
+   | `DATA_GO_KR_API_KEY` | 공공데이터포털에서 발급받은 키 |
+   | `VITE_GOLD_API_KEY` | GoldAPI.io 키 |
+   | `VITE_GOLD_API_URL` | `https://www.goldapi.io/api` |
+   | `VITE_EXCHANGE_RATE_API_KEY` | ExchangeRate-API 키 |
+   | `VITE_EXCHANGE_RATE_API_URL` | `https://v6.exchangerate-api.com/v6` |
 
-6. 환경변수가 목록에 추가된 것을 확인합니다
+5. 각 변수 입력 후 **"Add"** 버튼을 클릭합니다
 
-7. 변경사항을 적용하려면 **재배포**가 필요합니다:
-   - 상단 탭에서 "Deployments" 클릭
-   - 가장 최근 배포 항목의 오른쪽 `⋮` (점 세 개) 클릭
-   - **"Redeploy"** 클릭
+6. 모든 변수 입력 완료 후 Railway가 **자동으로 재배포**를 시작합니다
+   - 별도의 Redeploy 버튼 클릭 없이 변수 저장 즉시 반영됩니다
+   - 상단 탭 **"Deployments"** 에서 배포 진행 상황을 확인할 수 있습니다
 
 ---
 

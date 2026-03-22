@@ -18,7 +18,7 @@
 | 차트 | Recharts | 2 |
 | 날짜 처리 | date-fns | 3 |
 | 테스트 | Vitest + React Testing Library + MSW | - |
-| 배포 | Vercel | - |
+| 배포 | Railway | - |
 | CI/CD | GitHub Actions | - |
 
 ## 도메인 지식 (필수)
@@ -105,7 +105,7 @@
 
 ### 국내 금시세
 - [data.go.kr 공공데이터포털](https://www.data.go.kr/) — 무료, serviceKey 필요
-  - Vercel Serverless Function 프록시 경유: `/api/domestic-gold`
+  - Railway Express 서버 프록시 경유: `/api/domestic-gold`
 
 ### 예측용 보조 지표 (선택)
 - 달러 인덱스(DXY), VIX: [Alpha Vantage](https://www.alphavantage.co/) 무료 플랜
@@ -120,7 +120,7 @@ VITE_EXCHANGE_RATE_API_KEY=     # ExchangeRate-API 키
 VITE_EXCHANGE_RATE_API_URL=     # https://v6.exchangerate-api.com/v6
 VITE_ALPHA_VANTAGE_KEY=         # 보조 지표용 (선택)
 VITE_FRED_API_KEY=              # FRED API (선택)
-DATA_GO_KR_API_KEY=             # 공공데이터포털 serviceKey (Vercel 서버사이드 전용)
+DATA_GO_KR_API_KEY=             # 공공데이터포털 serviceKey (Railway 서버사이드 전용)
 ```
 - API 키는 `.env` 파일에 저장 — `.env.example`에 키 이름만 명시하고 커밋
 - GitHub Secrets에도 동일한 이름으로 등록 (CI/CD 참고: docs/05-cicd.md)
@@ -162,9 +162,8 @@ GoldCalc/
 │   ├── workflows/
 │   │   └── ci.yml               # PR 검증 (lint + type-check + test + build)
 │   └── pull_request_template.md # PR 체크리스트 템플릿
-├── api/
-│   └── domestic-gold.ts         # Vercel Serverless Function 프록시 (국내 금시세)
-├── vercel.json                  # Vercel SPA 라우팅 rewrite 설정
+├── server.js                    # Railway Express 서버 (SPA 서빙 + 국내 금시세 프록시)
+├── railway.json                 # Railway 빌드/배포 설정
 ├── src/
 │   ├── components/
 │   │   ├── layout/
@@ -291,10 +290,11 @@ npm run type-check    # TypeScript 타입 검사
 
 ## 배포
 
-- **자동 배포**: Vercel 대시보드에서 GitHub 저장소 연결 → main push 시 자동 프로덕션 배포
-- **PR 프리뷰**: PR 생성 시 Vercel이 자동으로 프리뷰 URL 생성 후 PR 코멘트에 등록
+- **자동 배포**: Railway 대시보드에서 GitHub 저장소 연결 → main push 시 자동 프로덕션 배포
+- **PR 프리뷰**: Railway PR Environments 활성화 시 PR마다 프리뷰 URL 자동 생성
 - **CI 검증**: GitHub Actions(`ci.yml`)가 PR 시 lint + type-check + test + build 자동 실행
-- **SPA 라우팅**: 프로젝트 루트 `vercel.json` 필수 (docs/05-cicd.md 섹션 4 참고)
+- **SPA 라우팅**: `server.js` Express 서버가 모든 경로를 `index.html`로 폴백 처리
+- **프록시**: `server.js`가 `/api/domestic-gold` 엔드포인트로 data.go.kr 프록시 처리
 - **상세 설정**: `docs/05-cicd.md` 참고
 
 ## 관련 문서

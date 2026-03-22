@@ -1,10 +1,10 @@
 # Sprint 05 — 품질 개선 및 배포
 
-**목표**: 반응형 완성, 접근성 개선, 성능 최적화, 에러 시나리오 전체 검증 후 Vercel 배포
+**목표**: 반응형 완성, 접근성 개선, 성능 최적화, 에러 시나리오 전체 검증 후 Railway 배포
 **기간**: 2일
 **선행 조건**: Sprint 01~04 모두 완료
 **결과물**: 프로덕션 배포 완료, 모바일/데스크톱 정상 동작
-**상태**: ✅ 코드 완료 / ⏳ Vercel 배포는 수동 설정 필요
+**상태**: ✅ 코드 완료 / ✅ Railway 배포 완료
 
 ---
 
@@ -81,14 +81,12 @@ PR 시 lint → type-check → test → build 자동 실행.
 
 ---
 
-### [ ] 5-6-b. Vercel 배포 (수동 설정 필요)
+### [x] 5-6-b. Railway 배포
 
-**수동으로 수행해야 하는 작업:**
-
-1. [vercel.com](https://vercel.com) → GitHub 계정 로그인
-2. **Add New Project** → `GoldCalc` 저장소 선택 → Import
-3. Framework Preset: **Vite** 선택
-4. **Environment Variables** 등록:
+1. [railway.app](https://railway.app) → GitHub 계정 로그인
+2. **New Project** → **Deploy from GitHub repo** → `GoldCalc` 저장소 선택
+3. `railway.json` 자동 감지 → `npm run build` → `node server.js` 실행
+4. **Variables** 탭에서 환경변수 등록:
    ```
    VITE_GOLD_API_KEY=<GoldAPI.io 키>
    VITE_EXCHANGE_RATE_API_KEY=<ExchangeRate-API 키>
@@ -96,9 +94,9 @@ PR 시 lint → type-check → test → build 자동 실행.
    VITE_EXCHANGE_RATE_API_URL=https://v6.exchangerate-api.com/v6
    VITE_ALPHA_VANTAGE_KEY=<선택사항>
    VITE_FRED_API_KEY=<선택사항>
+   DATA_GO_KR_API_KEY=<공공데이터포털 키>
    ```
-5. **Deploy** 클릭
-6. 배포 URL을 이 파일 + `CLAUDE.md`에 기재
+5. Settings → Domains에서 자동 생성된 배포 URL 확인
 
 ---
 
@@ -112,7 +110,7 @@ PR 시 lint → type-check → test → build 자동 실행.
 | 초기 JS 번들 500KB 이하 (213kB) | ✅ |
 | 면책 문구 표시 확인 | ✅ |
 | `.env` gitignore 동작 확인 | ✅ |
-| Vercel 프로덕션 배포 | ⏳ 수동 설정 필요 |
+| Railway 프로덕션 배포 | ✅ https://goldcalc.up.railway.app |
 
 ---
 
@@ -123,5 +121,5 @@ PR 시 lint → type-check → test → build 자동 실행.
 - [x] 접근성: 등락 아이콘+색상 병행, aria-label 적용
 - [x] 초기 JS 번들 213kB (500KB 이하 목표 달성)
 - [x] GitHub Actions CI 통과
-- [ ] Vercel 프로덕션 배포 완료 및 URL 확인 ← **수동 설정 필요**
+- [x] Railway 프로덕션 배포 완료 및 URL 확인 → https://goldcalc.up.railway.app
 - [ ] Branch Protection Rules ← **GitHub 웹에서 수동 설정 필요**

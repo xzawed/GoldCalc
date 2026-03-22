@@ -133,14 +133,14 @@ eachDayOfInterval({ start, end })          // 히스토리 날짜 목록 생성
 
 | 항목 | 선택 | 이유 |
 |------|------|------|
-| 호스팅 | **Vercel Hobby** | 무료, Vite SPA 자동 인식, 환경변수 관리 UI, PR 프리뷰 자동 생성 |
-| 자동 배포 | **Vercel × GitHub 네이티브 연동** | 대시보드에서 저장소 연결만으로 main push → 자동 배포, deploy.yml 불필요 |
+| 호스팅 | **Railway Hobby** | 무료 크레딧 제공, Node.js + 정적 파일 통합 서빙, 환경변수 관리 UI, PR 프리뷰 자동 생성 |
+| 자동 배포 | **Railway × GitHub 네이티브 연동** | 대시보드에서 저장소 연결만으로 main push → 자동 배포, deploy.yml 불필요 |
 | CI 검증 | **GitHub Actions** | PR 시 lint + type-check + test + build 자동 실행 (무료 2,000분/월) |
 | 브랜치 전략 | **GitHub Flow** | main(배포) + feature/* 브랜치, PR → CI 통과 → main 머지 → 자동 배포 |
-| 상업용 대안 | **Cloudflare Pages** | 무제한 대역폭, 상업 목적 무료, GitHub 연동 동일 방식 |
+| 프록시 서버 | **Express (server.js)** | SPA 정적 파일 서빙 + `/api/domestic-gold` CORS 프록시 통합 처리 |
 
-**배포 흐름 핵심**: GitHub Actions는 검증(CI)만, 배포는 Vercel이 GitHub를 직접 감시하여 자동 처리.
-`deploy.yml`·`preview.yml` 파일 불필요 → Vercel 토큰/ID를 GitHub Secrets에 등록할 필요 없음.
+**배포 흐름 핵심**: GitHub Actions는 검증(CI)만, 배포는 Railway가 GitHub를 직접 감시하여 자동 처리.
+`deploy.yml`·`preview.yml` 파일 불필요 → 배포 토큰을 GitHub Secrets에 등록할 필요 없음.
 
 ---
 
@@ -218,4 +218,4 @@ eachDayOfInterval({ start, end })          // 히스토리 날짜 목록 생성
 | 차트 | Recharts | Nivo | Nivo는 번들 ~500KB로 과대, 학습 곡선 높음 |
 | 날짜 | date-fns | dayjs | dayjs는 플러그인 방식으로 트리셰이킹 불리 |
 | 테스트 | Vitest | Jest | Vite 환경에서 Jest는 별도 transform 설정 필요 |
-| 배포 | Vercel | Netlify | Vite 최적화 템플릿, 환경변수 관리 UI 우수 |
+| 배포 | Railway | Netlify | Node.js 서버 + 정적 파일 통합 서빙 가능, CORS 프록시 별도 서비스 불필요 |

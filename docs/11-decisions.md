@@ -44,9 +44,9 @@
   - 요청 파라미터(날짜 형식, 페이지네이션 등)와 응답 필드 확인
   - 확인된 스키마를 공유해 주시면 프록시 및 훅 코드 완성
 
-- [ ] **Vercel 환경변수 등록**
-  - Vercel 대시보드 → Settings → Environment Variables
-  - `VITE_DATA_GO_KR_API_KEY` 추가 (Production + Preview)
+- [x] **Railway 환경변수 등록**
+  - Railway 대시보드 → 서비스 → Variables
+  - `DATA_GO_KR_API_KEY` 추가 (변수 저장 즉시 재배포 자동 적용)
 
 ---
 

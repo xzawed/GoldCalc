@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '@/utils/api'
 import type { DomesticGoldPriceResponse } from '@/types/gold'
 
-// Vercel Serverless Function 프록시 경로
+// Railway Express 서버 프록시 경로 (server.js)
 const PROXY_URL = '/api/domestic-gold'
 
 // data.go.kr getGoldPriceInfo 실제 응답 스키마
