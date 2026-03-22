@@ -110,7 +110,7 @@ PR 시 lint → type-check → test → build 자동 실행.
 | 초기 JS 번들 500KB 이하 (213kB) | ✅ |
 | 면책 문구 표시 확인 | ✅ |
 | `.env` gitignore 동작 확인 | ✅ |
-| Railway 프로덕션 배포 | ✅ https://goldcalc.up.railway.app |
+| Railway 프로덕션 배포 | ✅ https://goldcalc-production.up.railway.app |
 
 ---
 
@@ -121,5 +121,5 @@ PR 시 lint → type-check → test → build 자동 실행.
 - [x] 접근성: 등락 아이콘+색상 병행, aria-label 적용
 - [x] 초기 JS 번들 213kB (500KB 이하 목표 달성)
 - [x] GitHub Actions CI 통과
-- [x] Railway 프로덕션 배포 완료 및 URL 확인 → https://goldcalc.up.railway.app
+- [x] Railway 프로덕션 배포 완료 및 URL 확인 → https://goldcalc-production.up.railway.app
 - [ ] Branch Protection Rules ← **GitHub 웹에서 수동 설정 필요**

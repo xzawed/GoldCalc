@@ -43,7 +43,7 @@
                       ▼
         ┌─────────────────────────────────────┐
         │  Railway 자동 프로덕션 배포           │  ← Railway가 자동 처리
-        │  https://goldcalc.up.railway.app    │
+        │  https://goldcalc-production.up.railway.app    │
         └─────────────────────────────────────┘
 ```
 
@@ -352,7 +352,7 @@ git push origin feature/sprint-02-calculator
 
 # 5. CI 통과 + 리뷰 후 PR 머지
 # → Railway가 자동으로 프로덕션 배포
-#    https://goldcalc.up.railway.app
+#    https://goldcalc-production.up.railway.app
 ```
 
 ---
