@@ -66,7 +66,7 @@ export default function HistorySection({ metal = 'gold' }: HistorySectionProps) 
                 className={`w-1.5 h-5 rounded-full ${isGold ? 'bg-amber-400' : 'bg-slate-400'}`}
                 aria-hidden="true"
               />
-              {metalName} 시세 변동
+              {metalName} 날짜별 시세 변동
             </CardTitle>
             {/* 기간 선택 탭 */}
             <div
@@ -79,6 +79,7 @@ export default function HistorySection({ metal = 'gold' }: HistorySectionProps) 
                   key={key}
                   role="tab"
                   aria-selected={period === key}
+                  data-state={period === key ? 'active' : 'inactive'}
                   onClick={() => setPeriod(key)}
                   data-testid={`period-tab-${key}`}
                   className={cn(

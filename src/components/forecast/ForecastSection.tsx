@@ -84,6 +84,7 @@ export default function ForecastSection({ metal = 'gold' }: ForecastSectionProps
                   key={d}
                   role="tab"
                   aria-selected={days === d}
+                  data-state={days === d ? 'active' : 'inactive'}
                   onClick={() => setDays(d)}
                   data-testid={`forecast-tab-${d}`}
                   className={cn(
