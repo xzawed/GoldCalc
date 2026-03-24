@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '@/utils/api'
 import { calcPricePerGram } from '@/utils/goldCalc'
+import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
+import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
 import { format, subDays } from 'date-fns'
 import type { Period, HistoryEntry } from '@/types/gold'
 
@@ -51,12 +53,29 @@ async function fetchDayHistory(
 export function useGoldHistory(period: Period, exchangeRate: number) {
   return useQuery({
     queryKey: ['goldHistory', period],
-    queryFn: async () => {
-      const dates = getDatesForPeriod(period)
-      const results = await Promise.all(
-        dates.map((date) => fetchDayHistory(date, exchangeRate))
-      )
-      return results.filter((r): r is HistoryEntry => r !== null)
+    queryFn: async (): Promise<HistoryEntry[]> => {
+      const cacheKey = `goldhistory:${period}`
+
+      // 1. 당일 캐시 확인
+      const cached = getDailyCache<HistoryEntry[]>(cacheKey)
+      if (cached) return cached
+
+      try {
+        // 2. API 호출
+        const dates = getDatesForPeriod(period)
+        const results = await Promise.all(
+          dates.map((date) => fetchDayHistory(date, exchangeRate))
+        )
+        const entries = results.filter((r): r is HistoryEntry => r !== null)
+        setDailyCache(cacheKey, entries)
+        setPersistentCache(cacheKey, entries)
+        return entries
+      } catch {
+        // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
+        const lastKnown = getPersistentCache<HistoryEntry[]>(cacheKey)
+        if (lastKnown) return lastKnown.data
+        throw new Error('금시세 히스토리를 불러올 수 없습니다.')
+      }
     },
     staleTime: 24 * 60 * 60 * 1000,
     enabled: exchangeRate > 0,

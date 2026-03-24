@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '@/utils/api'
 import { calcPricePerGram } from '@/utils/metalCalc'
+import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
+import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
 import { format, subDays } from 'date-fns'
 import type { Period, HistoryEntry } from '@/types/gold'
 
-// gold-api.com 무료 API (히스토리: 10회/시간 제한)
 const GOLD_API_COM_URL = 'https://api.gold-api.com'
 
-// 히스토리 응답도 현재가와 동일 스키마로 예상
 interface GoldApiComHistoryRaw {
   name: string
   price: number
@@ -54,13 +54,29 @@ async function fetchDayHistory(
 export function useSilverHistory(period: Period, exchangeRate: number) {
   return useQuery({
     queryKey: ['silverHistory', period],
-    queryFn: async () => {
-      const dates = getDatesForPeriod(period)
-      // gold-api.com 히스토리는 10회/시간 제한 → 배치 크기 제한
-      const results = await Promise.all(
-        dates.map((date) => fetchDayHistory(date, exchangeRate)),
-      )
-      return results.filter((r): r is HistoryEntry => r !== null)
+    queryFn: async (): Promise<HistoryEntry[]> => {
+      const cacheKey = `silverhistory:${period}`
+
+      // 1. 당일 캐시 확인
+      const cached = getDailyCache<HistoryEntry[]>(cacheKey)
+      if (cached) return cached
+
+      try {
+        // 2. API 호출
+        const dates = getDatesForPeriod(period)
+        const results = await Promise.all(
+          dates.map((date) => fetchDayHistory(date, exchangeRate)),
+        )
+        const entries = results.filter((r): r is HistoryEntry => r !== null)
+        setDailyCache(cacheKey, entries)
+        setPersistentCache(cacheKey, entries)
+        return entries
+      } catch {
+        // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
+        const lastKnown = getPersistentCache<HistoryEntry[]>(cacheKey)
+        if (lastKnown) return lastKnown.data
+        throw new Error('은시세 히스토리를 불러올 수 없습니다.')
+      }
     },
     staleTime: 24 * 60 * 60 * 1000,
     enabled: exchangeRate > 0,

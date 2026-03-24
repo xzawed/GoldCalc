@@ -22,35 +22,61 @@ export function PriceDisplay({ metal, weight, unit, purity, priceUSD, exchangeRa
 
   const metalName = METAL_LABELS[metal]
   const unitLabel = unit === 'g' ? 'g' : unit === 'don' ? '돈' : '냥'
+  const isGold = metal === 'gold'
 
   return (
-    <div className="space-y-4" data-testid="price-display">
-      <div className="text-center py-4 bg-muted/30 rounded-lg">
-        <p className="text-sm text-muted-foreground mb-1">
+    <div className="space-y-3 pt-2" data-testid="price-display">
+      {/* 메인 결과 카드 */}
+      <div
+        className={`relative overflow-hidden rounded-xl border ${
+          isGold ? 'border-amber-500/20 bg-amber-500/[0.06]' : 'border-slate-500/20 bg-slate-500/[0.06]'
+        } px-5 py-5 text-center`}
+      >
+        <p className="text-xs text-muted-foreground mb-1.5">
           {weight || 0}{unitLabel} {purity} {metalName} 기준
         </p>
-        <p className="text-4xl font-bold tracking-tight" data-testid="total-price" aria-live="polite">
+        <p
+          className={`text-4xl font-bold tracking-tight price-num ${isGold ? 'text-amber-400' : 'text-slate-300'}`}
+          data-testid="total-price"
+          aria-live="polite"
+        >
           {weight > 0 ? formatKRW(totalKRW) : '—'}
         </p>
         {changePercent !== undefined && (
-          <p className={`text-sm mt-1 ${getChangeColor(changePercent)}`} aria-label={`전일 대비 ${formatChangeRate(changePercent)}`}>
+          <p
+            className={`text-sm mt-2 font-medium price-num ${getChangeColor(changePercent)}`}
+            aria-label={`전일 대비 ${formatChangeRate(changePercent)}`}
+          >
             <span aria-hidden="true">{getChangeIcon(changePercent)}</span>{' '}
             {formatChangeRate(changePercent)}
           </p>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="bg-muted/20 rounded p-3 text-center">
-          <p className="text-muted-foreground">{metalName} 1g ({purity})</p>
-          <p className="font-semibold" data-testid="price-per-gram">{formatKRW(pricePerGramKRW)}</p>
+
+      {/* 단가 정보 */}
+      <div className="grid grid-cols-2 gap-2.5 text-sm">
+        <div className="bg-muted/30 rounded-xl p-3.5 text-center border border-border/40">
+          <p className="text-xs text-muted-foreground mb-1">{metalName} 1g ({purity})</p>
+          <p className="font-semibold price-num" data-testid="price-per-gram">{formatKRW(pricePerGramKRW)}</p>
         </div>
-        <div className="bg-muted/20 rounded p-3 text-center">
-          <p className="text-muted-foreground">{metalName} 1돈 ({purity})</p>
-          <p className="font-semibold" data-testid="price-per-don">{formatKRW(pricePerDonKRW)}</p>
+        <div className="bg-muted/30 rounded-xl p-3.5 text-center border border-border/40">
+          <p className="text-xs text-muted-foreground mb-1">{metalName} 1돈 ({purity})</p>
+          <p className="font-semibold price-num" data-testid="price-per-don">{formatKRW(pricePerDonKRW)}</p>
         </div>
       </div>
+
+      {/* 기준 정보 */}
+      <div className="grid grid-cols-2 gap-2.5 text-xs text-muted-foreground">
+        <div className="bg-muted/20 rounded-lg px-3 py-2 text-center">
+          국제가: <span className="price-num font-medium">${priceUSD.toFixed(2)}/oz</span>
+        </div>
+        <div className="bg-muted/20 rounded-lg px-3 py-2 text-center">
+          환율: <span className="price-num font-medium">₩{exchangeRate.toLocaleString('ko-KR')}/USD</span>
+        </div>
+      </div>
+
       {updatedAt && (
-        <p className="text-xs text-muted-foreground text-center">
+        <p className="text-xs text-muted-foreground/60 text-center">
           기준 시각: {new Date(updatedAt).toLocaleString('ko-KR')}
         </p>
       )}

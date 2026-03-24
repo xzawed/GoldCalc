@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ErrorAlert } from '@/components/common/ErrorAlert'
@@ -11,6 +9,7 @@ import { UnitSelector } from '@/components/calculator/UnitSelector'
 import { PuritySelector } from '@/components/calculator/PuritySelector'
 import { useDomesticGoldPrice } from '@/hooks/useDomesticGoldPrice'
 import { useDomesticGoldHistory } from '@/hooks/useDomesticGoldHistory'
+import { cn } from '@/lib/utils'
 import {
   formatKRW, formatDate,
   getChangeColor, getChangeIcon, formatChangeRate,
@@ -47,9 +46,7 @@ function DomesticCalculator() {
   }
 
   if (isError || !data) {
-    return (
-      <ErrorAlert message="국내 금시세를 불러오지 못했습니다. API 키 설정을 확인해 주세요." />
-    )
+    return <ErrorAlert message="국내 금시세를 불러오지 못했습니다. API 키 설정을 확인해 주세요." />
   }
 
   const pricePerGram = data.priceKRW
@@ -84,33 +81,33 @@ function DomesticCalculator() {
         <PuritySelector metal="gold" value={purity} onChange={(p) => setPurity(p as GoldPurity)} />
       </div>
 
-      <div className="space-y-4" data-testid="domestic-price-display">
-        <div className="text-center py-4 bg-muted/30 rounded-lg">
-          <p className="text-sm text-muted-foreground mb-1">
+      <div className="space-y-3 pt-2" data-testid="domestic-price-display">
+        <div className="relative overflow-hidden rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-5 py-5 text-center">
+          <p className="text-xs text-muted-foreground mb-1.5">
             {weight || 0}{unitLabel} {purity} 국내금 기준
           </p>
-          <p className="text-4xl font-bold tracking-tight" data-testid="domestic-total-price" aria-live="polite">
+          <p className="text-4xl font-bold tracking-tight price-num text-amber-400" data-testid="domestic-total-price" aria-live="polite">
             {weight > 0 ? formatKRW(totalKRW) : '—'}
           </p>
           {data.changePercent !== undefined && data.changePercent !== 0 && (
-            <p className={`text-sm mt-1 ${getChangeColor(data.changePercent)}`}>
+            <p className={`text-sm mt-2 font-medium price-num ${getChangeColor(data.changePercent)}`}>
               <span aria-hidden="true">{getChangeIcon(data.changePercent)}</span>{' '}
               {formatChangeRate(data.changePercent)}
             </p>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <div className="bg-muted/20 rounded p-3 text-center">
-            <p className="text-muted-foreground">국내금 1g ({purity})</p>
-            <p className="font-semibold">{formatKRW(pricePerGramKRW)}</p>
+        <div className="grid grid-cols-2 gap-2.5 text-sm">
+          <div className="bg-muted/30 rounded-xl p-3.5 text-center border border-border/40">
+            <p className="text-xs text-muted-foreground mb-1">국내금 1g ({purity})</p>
+            <p className="font-semibold price-num">{formatKRW(pricePerGramKRW)}</p>
           </div>
-          <div className="bg-muted/20 rounded p-3 text-center">
-            <p className="text-muted-foreground">국내금 1돈 ({purity})</p>
-            <p className="font-semibold">{formatKRW(pricePerDonKRW)}</p>
+          <div className="bg-muted/30 rounded-xl p-3.5 text-center border border-border/40">
+            <p className="text-xs text-muted-foreground mb-1">국내금 1돈 ({purity})</p>
+            <p className="font-semibold price-num">{formatKRW(pricePerDonKRW)}</p>
           </div>
         </div>
         {data.updatedAt && (
-          <p className="text-xs text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground/60 text-center">
             기준 일자: {data.updatedAt} (KRX 금시장)
           </p>
         )}
@@ -119,41 +116,47 @@ function DomesticCalculator() {
   )
 }
 
-// ─── 히스토리 차트 (국내금 전용: KRW 단축만) ───
+// ─── 차트 ───
 
 function DomesticPriceChart({ entries }: { entries: DomesticHistoryEntry[] }) {
   const data = entries.map((e) => ({ date: e.date, krw: e.priceKRW }))
-
   return (
     <div role="img" aria-label="국내 금시세 차트" data-testid="domestic-price-chart">
-      <ResponsiveContainer width="100%" height={280}>
-        <ComposedChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+      <ResponsiveContainer width="100%" height={240}>
+        <ComposedChart data={data} margin={{ top: 8, right: 16, left: 4, bottom: 4 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
           <XAxis
             dataKey="date"
-            tickFormatter={(v) => {
-              const d = new Date(v)
-              return `${d.getMonth() + 1}/${d.getDate()}`
-            }}
-            tick={{ fontSize: 11 }}
+            tickFormatter={(v) => { const d = new Date(v); return `${d.getMonth() + 1}/${d.getDate()}` }}
+            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+            axisLine={{ stroke: 'hsl(var(--border))' }}
+            tickLine={false}
           />
           <YAxis
             tickFormatter={(v) => `₩${(v / 1000).toFixed(0)}k`}
-            tick={{ fontSize: 11 }}
-            width={70}
+            tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
+            axisLine={false}
+            tickLine={false}
+            width={65}
           />
           <Tooltip
             formatter={(value: number) => [formatKRW(value) + '/g', '국내금']}
             labelFormatter={(label) => formatDate(label as string)}
+            contentStyle={{
+              background: 'hsl(var(--popover))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '0.75rem',
+              fontSize: 12,
+            }}
           />
           <Line
             type="monotone"
             dataKey="krw"
             name="원화/g"
-            stroke="#f59e0b"
+            stroke="#f5c518"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 4 }}
+            activeDot={{ r: 4, fill: '#f5c518', strokeWidth: 0 }}
           />
         </ComposedChart>
       </ResponsiveContainer>
@@ -161,7 +164,7 @@ function DomesticPriceChart({ entries }: { entries: DomesticHistoryEntry[] }) {
   )
 }
 
-// ─── 히스토리 테이블 (국내금 전용) ───
+// ─── 테이블 ───
 
 function DomesticPriceTable({ entries }: { entries: DomesticHistoryEntry[] }) {
   const reversed = useMemo(() => {
@@ -174,29 +177,29 @@ function DomesticPriceTable({ entries }: { entries: DomesticHistoryEntry[] }) {
   }, [entries])
 
   return (
-    <div className="overflow-x-auto" data-testid="domestic-price-table">
+    <div className="overflow-x-auto rounded-xl border border-border/40" data-testid="domestic-price-table">
       <table className="w-full text-sm" role="table" aria-label="날짜별 국내 금시세">
         <thead>
-          <tr className="border-b text-muted-foreground text-left">
-            <th className="pb-2 pr-4 font-medium">날짜</th>
-            <th className="pb-2 pr-4 font-medium text-right">종가 (원/g)</th>
-            <th className="pb-2 font-medium text-right">전일 대비</th>
+          <tr className="border-b border-border/40 bg-muted/30">
+            <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">날짜</th>
+            <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground">종가 (원/g)</th>
+            <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground">전일 대비</th>
           </tr>
         </thead>
         <tbody>
           {reversed.map((entry) => {
             const changeColor = entry.changeRate !== undefined ? getChangeColor(entry.changeRate) : ''
             return (
-              <tr key={entry.date} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                <td className="py-2 pr-4">{formatDate(entry.date)}</td>
-                <td className="py-2 pr-4 text-right">{formatKRW(entry.priceKRW)}</td>
-                <td className={`py-2 text-right ${changeColor}`}>
+              <tr key={entry.date} className="border-b border-border/30 last:border-0 hover:bg-muted/20 transition-colors">
+                <td className="px-4 py-2.5 text-sm text-muted-foreground">{formatDate(entry.date)}</td>
+                <td className="px-4 py-2.5 text-right price-num font-medium">{formatKRW(entry.priceKRW)}</td>
+                <td className={`px-4 py-2.5 text-right price-num text-sm ${changeColor}`}>
                   {entry.changeRate !== undefined ? (
                     <span aria-label={`전일 대비 ${formatChangeRate(entry.changeRate)}`}>
                       <span aria-hidden="true">{getChangeIcon(entry.changeRate)}</span>{' '}
                       {formatChangeRate(entry.changeRate)}
                     </span>
-                  ) : '—'}
+                  ) : <span className="text-muted-foreground/40">—</span>}
                 </td>
               </tr>
             )
@@ -207,7 +210,7 @@ function DomesticPriceTable({ entries }: { entries: DomesticHistoryEntry[] }) {
   )
 }
 
-// ─── 히스토리 요약 배지 ───
+// ─── 요약 배지 ───
 
 function DomesticPriceSummary({ entries }: { entries: DomesticHistoryEntry[] }) {
   if (entries.length === 0) return null
@@ -217,27 +220,21 @@ function DomesticPriceSummary({ entries }: { entries: DomesticHistoryEntry[] }) 
   const avgKRW = Math.round(entries.reduce((sum, e) => sum + e.priceKRW, 0) / entries.length)
 
   return (
-    <div className="flex flex-wrap gap-3" data-testid="domestic-price-summary">
-      <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
-        <Badge variant="destructive" className="text-xs">최고</Badge>
-        <div>
-          <p className="font-semibold text-sm">{formatKRW(highest.priceKRW)}/g</p>
-          <p className="text-xs text-muted-foreground">{formatDate(highest.date)}</p>
-        </div>
+    <div className="grid grid-cols-3 gap-2.5" data-testid="domestic-price-summary">
+      <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2.5">
+        <p className="text-xs text-muted-foreground mb-0.5">최고</p>
+        <p className="font-bold text-sm price-num text-red-400">{formatKRW(highest.priceKRW)}<span className="text-xs font-normal text-muted-foreground">/g</span></p>
+        <p className="text-xs text-muted-foreground/70 mt-0.5">{formatDate(highest.date)}</p>
       </div>
-      <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
-        <Badge className="text-xs bg-blue-500 hover:bg-blue-600">최저</Badge>
-        <div>
-          <p className="font-semibold text-sm">{formatKRW(lowest.priceKRW)}/g</p>
-          <p className="text-xs text-muted-foreground">{formatDate(lowest.date)}</p>
-        </div>
+      <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-2.5">
+        <p className="text-xs text-muted-foreground mb-0.5">최저</p>
+        <p className="font-bold text-sm price-num text-blue-400">{formatKRW(lowest.priceKRW)}<span className="text-xs font-normal text-muted-foreground">/g</span></p>
+        <p className="text-xs text-muted-foreground/70 mt-0.5">{formatDate(lowest.date)}</p>
       </div>
-      <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
-        <Badge variant="secondary" className="text-xs">평균</Badge>
-        <div>
-          <p className="font-semibold text-sm">{formatKRW(avgKRW)}/g</p>
-          <p className="text-xs text-muted-foreground">기간 평균</p>
-        </div>
+      <div className="rounded-xl border border-border/40 bg-muted/40 px-3 py-2.5">
+        <p className="text-xs text-muted-foreground mb-0.5">평균</p>
+        <p className="font-bold text-sm price-num">{formatKRW(avgKRW)}<span className="text-xs font-normal text-muted-foreground">/g</span></p>
+        <p className="text-xs text-muted-foreground/70 mt-0.5">기간 평균</p>
       </div>
     </div>
   )
@@ -245,12 +242,12 @@ function DomesticPriceSummary({ entries }: { entries: DomesticHistoryEntry[] }) 
 
 // ─── 히스토리 섹션 ───
 
-const PERIOD_LABELS: Record<Period, string> = {
-  '1W': '1주',
-  '1M': '1개월',
-  '3M': '3개월',
-  '1Y': '1년',
-}
+const PERIODS: { key: Period; label: string }[] = [
+  { key: '1W', label: '1주' },
+  { key: '1M', label: '1개월' },
+  { key: '3M', label: '3개월' },
+  { key: '1Y', label: '1년' },
+]
 
 function DomesticHistoryContent({ period }: { period: Period }) {
   const { data: entries, isLoading, isError } = useDomesticGoldHistory(period)
@@ -274,11 +271,14 @@ export default function DomesticGoldSection() {
   const [period, setPeriod] = useState<Period>('1W')
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section aria-labelledby="domestic-calc-title" data-testid="domestic-gold-section">
-        <Card>
-          <CardHeader>
-            <CardTitle id="domestic-calc-title">국내 금시세 계산기</CardTitle>
+        <Card className="card-glow-gold">
+          <CardHeader className="pb-3">
+            <CardTitle id="domestic-calc-title" className="flex items-center gap-2 text-base">
+              <span className="w-1.5 h-5 rounded-full bg-amber-400" aria-hidden="true" />
+              국내 금시세 계산기
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <DomesticCalculator />
@@ -287,23 +287,40 @@ export default function DomesticGoldSection() {
       </section>
 
       <section aria-labelledby="domestic-history-title" data-testid="domestic-history-section">
-        <Card>
-          <CardHeader>
-            <CardTitle id="domestic-history-title">국내금 날짜별 시세 변동</CardTitle>
+        <Card className="card-glow-gold">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <CardTitle id="domestic-history-title" className="flex items-center gap-2 text-base">
+                <span className="w-1.5 h-5 rounded-full bg-amber-400" aria-hidden="true" />
+                국내금 시세 변동
+              </CardTitle>
+              <div
+                role="tablist"
+                aria-label="기간 선택"
+                className="inline-flex items-center gap-0.5 p-1 rounded-lg bg-muted/50 border border-border/40"
+              >
+                {PERIODS.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    role="tab"
+                    aria-selected={period === key}
+                    onClick={() => setPeriod(key)}
+                    data-testid={`domestic-period-tab-${key}`}
+                    className={cn(
+                      'px-3 py-1 rounded-md text-xs font-medium transition-all duration-150',
+                      period === key
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
-              <TabsList className="grid grid-cols-4 w-full mb-4" aria-label="기간 선택">
-                {(Object.entries(PERIOD_LABELS) as [Period, string][]).map(([p, label]) => (
-                  <TabsTrigger key={p} value={p} data-testid={`domestic-period-tab-${p}`}>{label}</TabsTrigger>
-                ))}
-              </TabsList>
-              {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
-                <TabsContent key={p} value={p}>
-                  {period === p && <DomesticHistoryContent period={p} />}
-                </TabsContent>
-              ))}
-            </Tabs>
+            <DomesticHistoryContent period={period} />
           </CardContent>
         </Card>
       </section>

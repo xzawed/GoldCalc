@@ -4,48 +4,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Light mode — clean & warm */
+    --background: 36 20% 97%;
+    --foreground: 224 15% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 224 15% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 38 92% 50%;
+    --popover-foreground: 224 15% 12%;
+    --primary: 43 95% 46%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 38 92% 95%;
-    --accent-foreground: 38 92% 20%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 220 14% 93%;
+    --secondary-foreground: 220 14% 25%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 48%;
+    --accent: 43 90% 93%;
+    --accent-foreground: 43 70% 28%;
+    --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 38 92% 50%;
-    --radius: 0.5rem;
+    --border: 220 14% 88%;
+    --input: 220 14% 91%;
+    --ring: 43 95% 46%;
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 38 92% 50%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Dark mode — luxury premium */
+    --background: 240 12% 4%;
+    --foreground: 210 20% 93%;
+    --card: 240 10% 8%;
+    --card-foreground: 210 20% 93%;
+    --popover: 240 10% 9%;
+    --popover-foreground: 210 20% 93%;
+    --primary: 43 95% 56%;
+    --primary-foreground: 240 12% 5%;
+    --secondary: 240 7% 13%;
+    --secondary-foreground: 210 15% 75%;
+    --muted: 240 7% 12%;
+    --muted-foreground: 215 12% 50%;
+    --accent: 240 7% 13%;
+    --accent-foreground: 210 15% 75%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 38 92% 50%;
+    --border: 240 6% 16%;
+    --input: 240 6% 14%;
+    --ring: 43 95% 56%;
   }
 }
 
@@ -53,8 +55,50 @@
   * {
     @apply border-border;
   }
+  html {
+    @apply scroll-smooth;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* 숫자 입력 스피너 숨김 */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer utilities {
+  /* 금 그라디언트 텍스트 */
+  .gradient-gold {
+    background: linear-gradient(135deg, #f5c518 0%, #e8a000 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  /* 은 그라디언트 텍스트 */
+  .gradient-silver {
+    background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  /* 가격 숫자 — tabular nums */
+  .price-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: -0.01em;
+  }
+  /* 카드 글로우 효과 */
+  .card-glow-gold {
+    box-shadow: 0 0 0 1px hsl(43 95% 56% / 0.15), 0 4px 24px hsl(43 95% 56% / 0.06);
+  }
+  .card-glow-silver {
+    box-shadow: 0 0 0 1px hsl(215 16% 65% / 0.15), 0 4px 24px hsl(215 16% 65% / 0.06);
   }
 }
