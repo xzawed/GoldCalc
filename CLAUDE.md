@@ -198,6 +198,7 @@ GoldCalc/
 │   │       ├── TrendBadge.tsx        # 상승세/하락세 배지 (Sprint 04)
 │   │       └── Disclaimer.tsx        # 면책 문구 — 항상 렌더링, 조건부 금지 (Sprint 04)
 │   ├── hooks/
+│   │   ├── useApiAvailability.ts    # 자산 탭별 데이터 가용성 반환 (탭 자동 숨김/복원)
 │   │   ├── useGoldPrice.ts          # 현재 금시세 fetch (TanStack Query)
 │   │   ├── useGoldHistory.ts        # 기간별 히스토리 fetch (TanStack Query)
 │   │   ├── useSilverPrice.ts        # 현재 은시세 fetch (TanStack Query)
@@ -214,6 +215,8 @@ GoldCalc/
 │   │   ├── historyCalc.ts           # 등락률·최고/최저/평균 계산
 │   │   ├── forecast.ts              # MA/선형회귀 예측 알고리즘
 │   │   ├── format.ts                # 숫자·날짜 포맷 유틸
+│   │   ├── dailyCache.ts            # localStorage 일별 캐시 (API 무료 한도 보호)
+│   │   ├── persistentCache.ts       # 영속 캐시 (API 한도 초과 시 마지막 데이터 유지)
 │   │   └── api.ts                   # fetch 래퍼 (에러 표준화)
 │   ├── types/
 │   │   └── gold.ts                  # 공유 타입 정의
@@ -229,6 +232,9 @@ GoldCalc/
 │   │   │   └── renderWithProviders.tsx  # QueryClient 포함 커스텀 렌더
 │   │   └── functional/              # 기능 테스트 (E2E 시나리오)
 │   └── App.tsx
+├── .scamanager/
+│   ├── config.json                  # SCAManager 코드리뷰 서버 설정 (토큰 포함)
+│   └── install-hook.sh             # pre-push 훅 설치 스크립트 (최초 1회 실행)
 ├── .env                             # API 키 (git 제외)
 ├── .env.example                     # API 키 템플릿 (git 포함)
 ├── CLAUDE.md
@@ -254,6 +260,8 @@ GoldCalc/
 - QueryClient 기본 staleTime: 60초, retry: 2회
 - API 에러 시 TanStack Query의 마지막 캐시값 유지 + ErrorAlert 표시
 - `.env` 파일은 절대 커밋하지 않음
+- **캐싱 전략**: `dailyCache` — 당일 API 재호출 방지 (무료 한도 보호), `persistentCache` — API 한도 초과 시 마지막 수신 데이터 유지 (만료 없음)
+- API 가용성 판단은 `useApiAvailability` 훅으로 중앙화 — 데이터 없는 탭 자동 숨김
 
 ### 차트 (Recharts)
 - 히스토리·예측 차트 모두 Recharts `ComposedChart` 사용
@@ -298,6 +306,11 @@ npm run type-check    # TypeScript 타입 검사
 - **SPA 라우팅**: `server.js` Express 서버가 모든 경로를 `index.html`로 폴백 처리
 - **프록시**: `server.js`가 `/api/domestic-gold` 엔드포인트로 data.go.kr 프록시 처리
 - **상세 설정**: `docs/05-cicd.md` 참고
+
+## 개발 도구
+
+- **SCAManager**: `git push` 시 자동 코드리뷰 실행 → 결과를 `http://scamanager-production.up.railway.app` 에 기록
+- 최초 설치: `bash .scamanager/install-hook.sh` (1회만 실행)
 
 ## 관련 문서
 
