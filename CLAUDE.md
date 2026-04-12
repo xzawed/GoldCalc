@@ -130,6 +130,7 @@ VITE_EXCHANGE_RATE_API_URL=     # https://v6.exchangerate-api.com/v6
 VITE_ALPHA_VANTAGE_KEY=         # 보조 지표용 (선택)
 VITE_FRED_API_KEY=              # FRED API (선택)
 DATA_GO_KR_API_KEY=             # 공공데이터포털 serviceKey (Railway 서버사이드 전용)
+VITE_SUPABASE_URL=              # Supabase 프로젝트 URL (페일오버용, 선택)
 ```
 - API 키는 `.env` 파일에 저장 — `.env.example`에 키 이름만 명시하고 커밋
 - GitHub Secrets에도 동일한 이름으로 등록 (CI/CD 참고: docs/05-cicd.md)
@@ -317,6 +318,32 @@ npm run test:coverage # 커버리지 포함
 npm run lint          # ESLint 검사
 npm run type-check    # TypeScript 타입 검사
 ```
+
+## 페일오버 아키텍처 (Railway → Supabase)
+
+국내 금시세 API(`/api/domestic-gold`)는 Railway Express 서버를 경유한다. Railway 장애 시 Supabase Edge Function으로 자동 전환하여 서비스 무중단을 보장한다.
+
+### 핵심 원리
+
+- **클라이언트 주도 타임아웃**: `Promise.race` 기반 5초 타임아웃 (AbortSignal 미사용 — MSW 호환성)
+- **Circuit Breaker 패턴**: Railway 실패 후 1분간 Supabase 우선 사용, 이후 Railway 재시도
+- **단계적 페일오버**: Railway → Supabase → 양쪽 실패 시 에러 throw
+
+### 관련 파일
+
+| 파일 | 역할 |
+|------|------|
+| `src/utils/fetchWithFailover.ts` | 페일오버 + Circuit Breaker 유틸 |
+| `supabase/functions/domestic-gold/index.ts` | data.go.kr 프록시 Deno Edge Function |
+| `src/hooks/useDomesticGoldPrice.ts` | fetchDomesticGold 사용 |
+| `src/hooks/useDomesticGoldHistory.ts` | fetchDomesticGold 사용 |
+
+### 설정
+
+1. `VITE_SUPABASE_URL` 미설정 시 페일오버 비활성 (기존과 동일 동작)
+2. Supabase 프로젝트: `ghlutgsnlceowdttxasp` (ap-northeast-1, goldcalc-failover)
+3. Edge Function URL: `https://ghlutgsnlceowdttxasp.supabase.co/functions/v1/domestic-gold`
+4. Supabase secret 설정 필요: `supabase secrets set DATA_GO_KR_API_KEY=<값> --project-ref ghlutgsnlceowdttxasp`
 
 ## 배포
 

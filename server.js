@@ -71,6 +71,12 @@ app.get('/api/domestic-gold', async (req, res) => {
   }
 })
 
+// 헬스체크 — 모니터링 도구(UptimeRobot 등) 연동용
+app.get('/health', (_req, res) => {
+  setCorsHeaders(res)
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 // Vite 빌드 정적 파일 서빙
 app.use(express.static(join(__dirname, 'dist')))
 

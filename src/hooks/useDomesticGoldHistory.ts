@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { apiFetch } from '@/utils/api'
+import { fetchDomesticGold } from '@/utils/fetchWithFailover'
 import { format, subDays } from 'date-fns'
 import type { Period, DomesticHistoryEntry } from '@/types/gold'
-
-const PROXY_URL = '/api/domestic-gold'
 
 interface DataGoKrItem {
   basDt: string
@@ -49,8 +47,8 @@ export function useDomesticGoldHistory(period: Period) {
       const beginDate = format(subDays(today, daysBack), 'yyyyMMdd')
       const endDate = format(today, 'yyyyMMdd')
 
-      const data = await apiFetch<DataGoKrResponse>(
-        `${PROXY_URL}?numOfRows=${numOfRows}&beginBasDt=${beginDate}&endBasDt=${endDate}&resultType=json`,
+      const { data } = await fetchDomesticGold<DataGoKrResponse>(
+        `?numOfRows=${numOfRows}&beginBasDt=${beginDate}&endBasDt=${endDate}&resultType=json`,
       )
 
       const items = data.response?.body?.items?.item

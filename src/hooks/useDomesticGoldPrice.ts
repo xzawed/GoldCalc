@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { apiFetch } from '@/utils/api'
+import { fetchDomesticGold } from '@/utils/fetchWithFailover'
 import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
 import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
 import type { DomesticGoldPriceResponse } from '@/types/gold'
-
-const PROXY_URL = '/api/domestic-gold'
 
 interface DataGoKrItem {
   basDt: string
@@ -63,9 +61,9 @@ export function useDomesticGoldPrice() {
       if (cached) return cached
 
       try {
-        // 2. API 호출
-        const data = await apiFetch<DataGoKrResponse>(
-          `${PROXY_URL}?numOfRows=1&resultType=json`,
+        // 2. API 호출 (Railway 우선, 장애 시 Supabase 자동 페일오버)
+        const { data } = await fetchDomesticGold<DataGoKrResponse>(
+          '?numOfRows=1&resultType=json',
         )
         const result = parseResponse(data)
         if (!result) throw new Error('국내 금시세 데이터를 파싱할 수 없습니다.')
