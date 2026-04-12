@@ -28,7 +28,8 @@ async function fetchTreasuryYield(): Promise<MarketSignal> {
       trend: value > 4.5 ? 'up' : value < 3.5 ? 'down' : 'neutral',
       description: `${value.toFixed(2)}% — 금리 상승 시 금 약세 압력`,
     }
-  } catch {
+  } catch (error) {
+    console.warn('[useMarketSignals] 미국 국채 10년 조회 실패:', error)
     return { name: '미국 국채 10년', value: 0, trend: 'neutral', description: '데이터 없음' }
   }
 }
@@ -49,7 +50,8 @@ async function fetchVIX(): Promise<MarketSignal> {
       trend: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral',
       description: `${value.toFixed(2)} — 변동성 상승 시 안전자산 선호`,
     }
-  } catch {
+  } catch (error) {
+    console.warn('[useMarketSignals] VIX 조회 실패:', error)
     return { name: 'VIX (공포지수)', value: 0, trend: 'neutral', description: '데이터 없음' }
   }
 }

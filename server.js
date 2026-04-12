@@ -17,6 +17,22 @@ function setCorsHeaders(res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
 }
 
+/** 날짜 파라미터 검증: YYYYMMDD 형식 8자리 숫자만 허용 */
+function isValidDate(v) {
+  return typeof v === 'string' && /^\d{8}$/.test(v)
+}
+
+/** 종목명 검증: 한글·영문·숫자·공백만 허용, 최대 30자 */
+function isValidItemName(v) {
+  return typeof v === 'string' && /^[\w\uAC00-\uD7A3\s]{1,30}$/.test(v)
+}
+
+/** 페이지 번호/건수 검증: 1 이상 최대값 이하 정수 */
+function isValidPageInt(v, max) {
+  const n = Number(v)
+  return Number.isInteger(n) && n >= 1 && n <= max
+}
+
 // 국내 금시세 프록시 — CORS preflight
 app.options('/api/domestic-gold', (_req, res) => {
   setCorsHeaders(res)
@@ -39,6 +55,26 @@ app.get('/api/domestic-gold', async (req, res) => {
     endBasDt,
     likeItmsNm,
   } = req.query
+
+  // 입력 검증
+  if (!isValidPageInt(pageNo, 100)) {
+    return res.status(400).json({ error: 'pageNo는 1~100 사이의 정수여야 합니다.' })
+  }
+  if (!isValidPageInt(numOfRows, 365)) {
+    return res.status(400).json({ error: 'numOfRows는 1~365 사이의 정수여야 합니다.' })
+  }
+  if (basDt && !isValidDate(basDt)) {
+    return res.status(400).json({ error: 'basDt는 YYYYMMDD 형식이어야 합니다.' })
+  }
+  if (beginBasDt && !isValidDate(beginBasDt)) {
+    return res.status(400).json({ error: 'beginBasDt는 YYYYMMDD 형식이어야 합니다.' })
+  }
+  if (endBasDt && !isValidDate(endBasDt)) {
+    return res.status(400).json({ error: 'endBasDt는 YYYYMMDD 형식이어야 합니다.' })
+  }
+  if (likeItmsNm && !isValidItemName(likeItmsNm)) {
+    return res.status(400).json({ error: 'likeItmsNm에 허용되지 않는 문자가 포함되어 있습니다.' })
+  }
 
   try {
     const params = new URLSearchParams({

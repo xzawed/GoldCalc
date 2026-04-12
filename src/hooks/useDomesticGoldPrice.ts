@@ -2,32 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchDomesticGold } from '@/utils/fetchWithFailover'
 import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
 import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
-import type { DomesticGoldPriceResponse } from '@/types/gold'
-
-interface DataGoKrItem {
-  basDt: string
-  itmsNm: string
-  clpr: string
-  mkp: string
-  hipr: string
-  lopr: string
-  vs: string
-  fltRt: string
-  trqu: string
-  trPrc: string
-}
-
-interface DataGoKrResponse {
-  response: {
-    header: { resultCode: string; resultMsg: string }
-    body: {
-      totalCount: number
-      pageNo: number
-      numOfRows: number
-      items: { item: DataGoKrItem[] }
-    }
-  }
-}
+import type { DomesticGoldPriceResponse, DataGoKrResponse } from '@/types/gold'
 
 export interface DomesticGoldPriceResult extends DomesticGoldPriceResponse {
   isStale?: boolean
@@ -70,7 +45,8 @@ export function useDomesticGoldPrice() {
         setDailyCache(CACHE_KEY, result)
         setPersistentCache(CACHE_KEY, result)
         return result
-      } catch {
+      } catch (error) {
+        console.error('[useDomesticGoldPrice] API 호출 실패, 영속 캐시로 폴백:', error)
         // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
         const lastKnown = getPersistentCache<DomesticGoldPriceResult>(CACHE_KEY)
         if (lastKnown) {

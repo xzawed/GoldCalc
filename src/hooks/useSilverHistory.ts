@@ -5,8 +5,7 @@ import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
 import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
 import { format, subDays } from 'date-fns'
 import type { Period, HistoryEntry } from '@/types/gold'
-
-const GOLD_API_COM_URL = 'https://api.gold-api.com'
+import { GOLD_API_COM_URL } from '@/constants/api'
 
 interface GoldApiComHistoryRaw {
   name: string
@@ -46,12 +45,17 @@ async function fetchDayHistory(
       priceUSD,
       priceKRW: Math.round(calcPricePerGram(priceUSD, exchangeRate) * 0.999),
     }
-  } catch {
+  } catch (error) {
+    console.warn(`[useSilverHistory] ${date} 히스토리 조회 실패:`, error)
     return null
   }
 }
 
-export function useSilverHistory(period: Period, exchangeRate: number) {
+interface UseSilverHistoryOptions {
+  enabled?: boolean
+}
+
+export function useSilverHistory(period: Period, exchangeRate: number, { enabled = true }: UseSilverHistoryOptions = {}) {
   return useQuery({
     queryKey: ['silverHistory', period],
     queryFn: async (): Promise<HistoryEntry[]> => {
@@ -71,7 +75,8 @@ export function useSilverHistory(period: Period, exchangeRate: number) {
         setDailyCache(cacheKey, entries)
         setPersistentCache(cacheKey, entries)
         return entries
-      } catch {
+      } catch (error) {
+        console.error(`[useSilverHistory] ${period} 히스토리 일괄 조회 실패, 영속 캐시로 폴백:`, error)
         // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
         const lastKnown = getPersistentCache<HistoryEntry[]>(cacheKey)
         if (lastKnown) return lastKnown.data
@@ -79,6 +84,6 @@ export function useSilverHistory(period: Period, exchangeRate: number) {
       }
     },
     staleTime: 24 * 60 * 60 * 1000,
-    enabled: exchangeRate > 0,
+    enabled: enabled && exchangeRate > 0,
   })
 }

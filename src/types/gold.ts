@@ -22,6 +22,14 @@ export type Purity = GoldPurity | SilverPurity
 // 기간 탭
 export type Period = '1W' | '1M' | '3M' | '1Y'
 
+// 기간 탭 UI 옵션 (중복 방지용 공통 상수)
+export const PERIOD_OPTIONS: { key: Period; label: string }[] = [
+  { key: '1W', label: '1주' },
+  { key: '1M', label: '1개월' },
+  { key: '3M', label: '3개월' },
+  { key: '1Y', label: '1년' },
+]
+
 // 예측 기간
 export type ForecastDays = 7 | 30
 
@@ -91,6 +99,32 @@ export interface AssetTabConfig {
   label: string
   metal: Metal
   source: PriceSource
+}
+
+// data.go.kr 국내 금시세 API 응답 (useDomesticGoldPrice, useDomesticGoldHistory 공용)
+export interface DataGoKrItem {
+  basDt: string
+  itmsNm: string
+  clpr: string
+  mkp: string
+  hipr: string
+  lopr: string
+  vs: string
+  fltRt: string
+  trqu: string
+  trPrc: string
+}
+
+export interface DataGoKrResponse {
+  response: {
+    header: { resultCode: string; resultMsg: string }
+    body: {
+      totalCount: number
+      pageNo: number
+      numOfRows: number
+      items: { item: DataGoKrItem[] }
+    }
+  }
 }
 
 export const ASSET_TABS: AssetTabConfig[] = [

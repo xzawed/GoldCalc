@@ -33,7 +33,8 @@ export function useExchangeRate() {
         setDailyCache(CACHE_KEY, result)
         setPersistentCache(CACHE_KEY, result)
         return result
-      } catch {
+      } catch (error) {
+        console.error('[useExchangeRate] API 호출 실패, 영속 캐시로 폴백:', error)
         // 3. API 실패 → 마지막으로 수신한 환율로 폴백
         const lastKnown = getPersistentCache<ExchangeRateResult>(CACHE_KEY)
         if (lastKnown) {

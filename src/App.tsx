@@ -37,7 +37,7 @@ export default function App() {
     }
   }, [availability, activeTab])
 
-  const tabConfig = ASSET_TABS.find((t) => t.key === activeTab)!
+  const tabConfig = ASSET_TABS.find((t) => t.key === activeTab) ?? ASSET_TABS[0]
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col relative">

@@ -14,7 +14,8 @@ export function getPersistentCache<T>(key: string): PersistedEntry<T> | null {
     const raw = localStorage.getItem(`${PREFIX}${key}`)
     if (!raw) return null
     return JSON.parse(raw) as PersistedEntry<T>
-  } catch {
+  } catch (error) {
+    console.warn('[persistentCache] 읽기 실패 (손상된 데이터 가능성):', error)
     return null
   }
 }

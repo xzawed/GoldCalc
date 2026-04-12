@@ -11,14 +11,8 @@ import { useExchangeRate } from '@/hooks/useExchangeRate'
 import { calcPeriodSummary } from '@/utils/historyCalc'
 import { METAL_LABELS } from '@/utils/metalCalc'
 import { cn } from '@/lib/utils'
-import type { Period, Metal } from '@/types/gold'
-
-const PERIODS: { key: Period; label: string }[] = [
-  { key: '1W', label: '1주' },
-  { key: '1M', label: '1개월' },
-  { key: '3M', label: '3개월' },
-  { key: '1Y', label: '1년' },
-]
+import type { Metal } from '@/types/gold'
+import { PERIOD_OPTIONS } from '@/types/gold'
 
 interface HistorySectionProps {
   metal?: Metal
@@ -28,8 +22,8 @@ function HistoryContent({ period, metal }: { period: Period; metal: Metal }) {
   const { data: rateData } = useExchangeRate()
   const exchangeRate = rateData?.exchangeRate ?? 0
 
-  const goldHistory = useGoldHistory(period, exchangeRate)
-  const silverHistory = useSilverHistory(period, exchangeRate)
+  const goldHistory = useGoldHistory(period, exchangeRate, { enabled: metal === 'gold' })
+  const silverHistory = useSilverHistory(period, exchangeRate, { enabled: metal === 'silver' })
 
   const query = metal === 'gold' ? goldHistory : silverHistory
   const { data: entries, isLoading, isError } = query
@@ -74,7 +68,7 @@ export default function HistorySection({ metal = 'gold' }: HistorySectionProps) 
               aria-label="기간 선택"
               className="inline-flex items-center gap-0.5 p-1 rounded-lg bg-muted/50 border border-border/40"
             >
-              {PERIODS.map(({ key, label }) => (
+              {PERIOD_OPTIONS.map(({ key, label }) => (
                 <button
                   key={key}
                   role="tab"

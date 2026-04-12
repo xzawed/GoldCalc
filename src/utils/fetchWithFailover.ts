@@ -59,7 +59,8 @@ export async function fetchDomesticGold<T>(queryString: string): Promise<Failove
       const res = await timedFetch(`${fallbackUrl}${queryString}`)
       const data = (await res.json()) as T
       return { data, source: 'supabase' }
-    } catch {
+    } catch (supabaseError) {
+      console.warn('[fetchWithFailover] Supabase 페일오버도 실패, Railway 최종 시도:', supabaseError)
       // Supabase도 실패 → Railway 마지막 시도
       const res = await timedFetch(`${PRIMARY_URL}${queryString}`)
       const data = (await res.json()) as T
@@ -94,7 +95,8 @@ export async function fetchDomesticGold<T>(queryString: string): Promise<Failove
       const res = await timedFetch(`${fallbackUrl}${queryString}`)
       const data = (await res.json()) as T
       return { data, source: 'supabase' }
-    } catch {
+    } catch (supabaseError) {
+      console.warn('[fetchWithFailover] Supabase 페일오버 실패:', supabaseError)
       throw railwayError // 원래 에러를 상위에 전파
     }
   }

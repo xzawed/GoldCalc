@@ -45,12 +45,17 @@ async function fetchDayHistory(
       priceUSD,
       priceKRW: Math.round(calcPricePerGram(priceUSD, exchangeRate) * 0.9999),
     }
-  } catch {
+  } catch (error) {
+    console.warn(`[useGoldHistory] ${date} 히스토리 조회 실패:`, error)
     return null
   }
 }
 
-export function useGoldHistory(period: Period, exchangeRate: number) {
+interface UseGoldHistoryOptions {
+  enabled?: boolean
+}
+
+export function useGoldHistory(period: Period, exchangeRate: number, { enabled = true }: UseGoldHistoryOptions = {}) {
   return useQuery({
     queryKey: ['goldHistory', period],
     queryFn: async (): Promise<HistoryEntry[]> => {
@@ -70,7 +75,8 @@ export function useGoldHistory(period: Period, exchangeRate: number) {
         setDailyCache(cacheKey, entries)
         setPersistentCache(cacheKey, entries)
         return entries
-      } catch {
+      } catch (error) {
+        console.error(`[useGoldHistory] ${period} 히스토리 일괄 조회 실패, 영속 캐시로 폴백:`, error)
         // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
         const lastKnown = getPersistentCache<HistoryEntry[]>(cacheKey)
         if (lastKnown) return lastKnown.data
@@ -78,6 +84,6 @@ export function useGoldHistory(period: Period, exchangeRate: number) {
       }
     },
     staleTime: 24 * 60 * 60 * 1000,
-    enabled: exchangeRate > 0,
+    enabled: enabled && exchangeRate > 0,
   })
 }

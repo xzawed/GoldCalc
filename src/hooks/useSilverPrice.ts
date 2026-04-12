@@ -2,8 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '@/utils/api'
 import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
 import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
-
-const GOLD_API_COM_URL = 'https://api.gold-api.com'
+import { GOLD_API_COM_URL } from '@/constants/api'
 
 interface GoldApiComPriceRaw {
   name: string
@@ -23,9 +22,14 @@ export interface SilverPriceResult {
 
 const CACHE_KEY = 'silverprice'
 
-export function useSilverPrice() {
+interface UseSilverPriceOptions {
+  enabled?: boolean
+}
+
+export function useSilverPrice({ enabled = true }: UseSilverPriceOptions = {}) {
   return useQuery({
     queryKey: ['silverPrice'],
+    enabled,
     queryFn: async (): Promise<SilverPriceResult> => {
       // 1. 당일 캐시 확인
       const cached = getDailyCache<SilverPriceResult>(CACHE_KEY)
@@ -44,7 +48,8 @@ export function useSilverPrice() {
         setDailyCache(CACHE_KEY, result)
         setPersistentCache(CACHE_KEY, result)
         return result
-      } catch {
+      } catch (error) {
+        console.error('[useSilverPrice] API 호출 실패, 영속 캐시로 폴백:', error)
         // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
         const lastKnown = getPersistentCache<SilverPriceResult>(CACHE_KEY)
         if (lastKnown) {

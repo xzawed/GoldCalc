@@ -20,8 +20,8 @@ export default function MetalCalculator({ metal }: MetalCalculatorProps) {
   const [unit, setUnit] = useState<WeightUnit>('don')
   const [purity, setPurity] = useState<Purity>(DEFAULT_PURITY[metal])
 
-  const goldQuery = useGoldPrice()
-  const silverQuery = useSilverPrice()
+  const goldQuery = useGoldPrice({ enabled: metal === 'gold' })
+  const silverQuery = useSilverPrice({ enabled: metal === 'silver' })
   const { data: rateData, isLoading: rateLoading, isError: rateError } = useExchangeRate()
 
   const priceQuery = metal === 'gold' ? goldQuery : silverQuery

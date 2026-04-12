@@ -13,7 +13,8 @@ export function getDailyCache<T>(key: string): T | null {
     const stored = localStorage.getItem(`${PREFIX}${key}:${getTodayKey()}`)
     if (!stored) return null
     return JSON.parse(stored) as T
-  } catch {
+  } catch (error) {
+    console.warn('[dailyCache] 읽기 실패 (손상된 데이터 가능성):', error)
     return null
   }
 }

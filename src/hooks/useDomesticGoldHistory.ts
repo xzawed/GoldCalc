@@ -1,34 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchDomesticGold } from '@/utils/fetchWithFailover'
 import { format, subDays } from 'date-fns'
-import type { Period, DomesticHistoryEntry } from '@/types/gold'
-
-interface DataGoKrItem {
-  basDt: string
-  itmsNm: string
-  clpr: string
-  mkp: string
-  hipr: string
-  lopr: string
-  vs: string
-  fltRt: string
-  trqu: string
-  trPrc: string
-}
-
-interface DataGoKrResponse {
-  response: {
-    header: { resultCode: string; resultMsg: string }
-    body: {
-      totalCount: number
-      pageNo: number
-      numOfRows: number
-      items: {
-        item: DataGoKrItem[]
-      }
-    }
-  }
-}
+import type { Period, DomesticHistoryEntry, DataGoKrResponse } from '@/types/gold'
 
 // 기간별 조회 일수 (영업일 기준이므로 넉넉하게)
 const PERIOD_CONFIG: Record<Period, { daysBack: number; numOfRows: number }> = {

@@ -74,7 +74,8 @@ export default function NewsSection() {
           clearInterval(check)
         }
       }, 500)
-    } catch {
+    } catch (error) {
+      console.error('[NewsSection] X 위젯 초기화 실패:', error)
       setState('error')
     }
   }, [])

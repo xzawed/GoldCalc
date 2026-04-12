@@ -19,9 +19,14 @@ export interface GoldPriceResult {
 
 const CACHE_KEY = 'goldprice'
 
-export function useGoldPrice() {
+interface UseGoldPriceOptions {
+  enabled?: boolean
+}
+
+export function useGoldPrice({ enabled = true }: UseGoldPriceOptions = {}) {
   return useQuery({
     queryKey: ['goldPrice'],
+    enabled,
     queryFn: async (): Promise<GoldPriceResult> => {
       // 1. 당일 캐시 확인
       const cached = getDailyCache<GoldPriceResult>(CACHE_KEY)
@@ -41,7 +46,8 @@ export function useGoldPrice() {
         setDailyCache(CACHE_KEY, result)
         setPersistentCache(CACHE_KEY, result)
         return result
-      } catch {
+      } catch (error) {
+        console.error('[useGoldPrice] API 호출 실패, 영속 캐시로 폴백:', error)
         // 3. API 실패 → 마지막으로 수신한 데이터로 폴백
         const lastKnown = getPersistentCache<GoldPriceResult>(CACHE_KEY)
         if (lastKnown) {

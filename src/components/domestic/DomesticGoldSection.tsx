@@ -20,6 +20,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import type { WeightUnit, GoldPurity, Period, DomesticHistoryEntry } from '@/types/gold'
+import { PERIOD_OPTIONS } from '@/types/gold'
 
 // ─── 계산기 ───
 
@@ -242,13 +243,6 @@ function DomesticPriceSummary({ entries }: { entries: DomesticHistoryEntry[] }) 
 
 // ─── 히스토리 섹션 ───
 
-const PERIODS: { key: Period; label: string }[] = [
-  { key: '1W', label: '1주' },
-  { key: '1M', label: '1개월' },
-  { key: '3M', label: '3개월' },
-  { key: '1Y', label: '1년' },
-]
-
 function DomesticHistoryContent({ period }: { period: Period }) {
   const { data: entries, isLoading, isError } = useDomesticGoldHistory(period)
 
@@ -299,7 +293,7 @@ export default function DomesticGoldSection() {
                 aria-label="기간 선택"
                 className="inline-flex items-center gap-0.5 p-1 rounded-lg bg-muted/50 border border-border/40"
               >
-                {PERIODS.map(({ key, label }) => (
+                {PERIOD_OPTIONS.map(({ key, label }) => (
                   <button
                     key={key}
                     role="tab"

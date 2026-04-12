@@ -29,7 +29,7 @@ function StaleBadge({ cachedAt }: { cachedAt?: string }) {
 }
 
 export function PriceBar({ activeTab }: PriceBarProps) {
-  const tabConfig = ASSET_TABS.find((t) => t.key === activeTab)!
+  const tabConfig = ASSET_TABS.find((t) => t.key === activeTab) ?? ASSET_TABS[0]
   const isDomestic = tabConfig.source === 'domestic'
 
   const { data: goldData, isLoading: goldLoading } = useGoldPrice()
