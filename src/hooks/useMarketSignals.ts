@@ -15,11 +15,7 @@ interface AlphaVantageQuote {
 
 async function fetchTreasuryYield(): Promise<MarketSignal> {
   try {
-    const key = import.meta.env.VITE_FRED_API_KEY
-    if (!key) throw new Error('No FRED API key')
-    const data = await apiFetch<FREDResponse>(
-      `https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${key}&file_type=json&limit=1&sort_order=desc`
-    )
+    const data = await apiFetch<FREDResponse>('/api/market-signals/treasury')
     const latest = data.observations[0]
     const value = parseFloat(latest?.value ?? '0')
     return {
@@ -36,11 +32,7 @@ async function fetchTreasuryYield(): Promise<MarketSignal> {
 
 async function fetchVIX(): Promise<MarketSignal> {
   try {
-    const key = import.meta.env.VITE_ALPHA_VANTAGE_KEY
-    if (!key) throw new Error('No Alpha Vantage key')
-    const data = await apiFetch<AlphaVantageQuote>(
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=VIX&apikey=${key}`
-    )
+    const data = await apiFetch<AlphaVantageQuote>('/api/market-signals/vix')
     const value = parseFloat(data['Global Quote']?.['05. price'] ?? '0')
     const changeStr = data['Global Quote']?.['10. change percent'] ?? '0%'
     const change = parseFloat(changeStr.replace('%', ''))

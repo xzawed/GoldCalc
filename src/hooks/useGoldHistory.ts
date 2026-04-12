@@ -34,10 +34,7 @@ async function fetchDayHistory(
   exchangeRate: number
 ): Promise<HistoryEntry | null> {
   try {
-    const data = await apiFetch<GoldAPIHistoryRaw>(
-      `${import.meta.env.VITE_GOLD_API_URL}/XAU/USD/${date}`,
-      { 'x-access-token': import.meta.env.VITE_GOLD_API_KEY }
-    )
+    const data = await apiFetch<GoldAPIHistoryRaw>(`/api/gold-history?date=${date}`)
     const priceUSD = data.close ?? data.price ?? 0
     if (!priceUSD) return null
     return {

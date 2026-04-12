@@ -26,9 +26,7 @@ export function useExchangeRate() {
 
       try {
         // 2. API 호출
-        const data = await apiFetch<ExchangeRateRaw>(
-          `${import.meta.env.VITE_EXCHANGE_RATE_API_URL}/${import.meta.env.VITE_EXCHANGE_RATE_API_KEY}/latest/USD`
-        )
+        const data = await apiFetch<ExchangeRateRaw>('/api/exchange-rate')
         const result: ExchangeRateResult = { exchangeRate: data.conversion_rates.KRW }
         setDailyCache(CACHE_KEY, result)
         setPersistentCache(CACHE_KEY, result)

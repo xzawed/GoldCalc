@@ -71,8 +71,10 @@ export default function HistorySection({ metal = 'gold' }: HistorySectionProps) 
               {PERIOD_OPTIONS.map(({ key, label }) => (
                 <button
                   key={key}
+                  id={`history-tab-${key}`}
                   role="tab"
                   aria-selected={period === key}
+                  aria-controls="history-tabpanel"
                   data-state={period === key ? 'active' : 'inactive'}
                   onClick={() => setPeriod(key)}
                   data-testid={`period-tab-${key}`}
@@ -89,7 +91,11 @@ export default function HistorySection({ metal = 'gold' }: HistorySectionProps) 
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent
+          id="history-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`history-tab-${period}`}
+        >
           <HistoryContent period={period} metal={metal} />
         </CardContent>
       </Card>

@@ -7,17 +7,12 @@ interface EnvCheck {
   feature: string
 }
 
-const REQUIRED_ENV: EnvCheck[] = [
-  { key: 'VITE_GOLD_API_KEY', feature: '국제 금시세 (GoldAPI.io)' },
-  { key: 'VITE_GOLD_API_URL', feature: '국제 금시세 URL (GoldAPI.io)' },
-  { key: 'VITE_EXCHANGE_RATE_API_KEY', feature: '환율 (ExchangeRate-API)' },
-  { key: 'VITE_EXCHANGE_RATE_API_URL', feature: '환율 URL (ExchangeRate-API)' },
-]
+// API 키는 모두 서버사이드 전용 (Railway 환경변수) — 클라이언트 번들에 포함 안 됨
+// 클라이언트에서 검증 가능한 VITE_ 변수만 체크
+const REQUIRED_ENV: EnvCheck[] = []
 
 const OPTIONAL_ENV: EnvCheck[] = [
   { key: 'VITE_SUPABASE_URL', feature: '국내 금시세 페일오버 (Supabase)' },
-  { key: 'VITE_FRED_API_KEY', feature: '미국 국채 10년 시그널 (FRED)' },
-  { key: 'VITE_ALPHA_VANTAGE_KEY', feature: 'VIX 공포지수 시그널 (Alpha Vantage)' },
 ]
 
 export function validateEnv(): void {

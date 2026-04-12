@@ -1,10 +1,8 @@
 import { http, HttpResponse } from 'msw'
 
 export const handlers = [
-  // GoldAPI.io current price (no date suffix)
-  http.get('*/XAU/USD', ({ request }) => {
-    const url = new URL(request.url)
-    if (/\/XAU\/USD\/\d{8}$/.test(url.pathname)) return
+  // Gold price proxy (/api/gold-price)
+  http.get('*/api/gold-price', () => {
     return HttpResponse.json({
       price: 2650.5,
       chp: 0.85,
@@ -13,8 +11,8 @@ export const handlers = [
     })
   }),
 
-  // GoldAPI.io history (date-specific)
-  http.get('*/XAU/USD/:date', () => {
+  // Gold history proxy (/api/gold-history?date=YYYYMMDD)
+  http.get('*/api/gold-history', () => {
     return HttpResponse.json({
       timestamp: 1742192400,
       close: 2640.0,
@@ -22,8 +20,8 @@ export const handlers = [
     })
   }),
 
-  // ExchangeRate-API
-  http.get('*/v6/*/latest/USD', () => {
+  // Exchange rate proxy (/api/exchange-rate)
+  http.get('*/api/exchange-rate', () => {
     return HttpResponse.json({
       result: 'success',
       conversion_rates: { KRW: 1380 },
@@ -84,22 +82,22 @@ export const handlers = [
     })
   }),
 
-  // Alpha Vantage (market signals)
-  http.get('*alphavantage*', () => {
+  // Market signals proxy — treasury (/api/market-signals/treasury)
+  http.get('*/api/market-signals/treasury', () => {
+    return HttpResponse.json({
+      observations: [
+        { date: '2026-03-18', value: '4.25' },
+      ],
+    })
+  }),
+
+  // Market signals proxy — VIX (/api/market-signals/vix)
+  http.get('*/api/market-signals/vix', () => {
     return HttpResponse.json({
       'Global Quote': {
         '05. price': '18.50',
         '10. change percent': '1.25%',
       },
-    })
-  }),
-
-  // FRED API (Treasury/DXY)
-  http.get('*api.stlouisfed.org*', () => {
-    return HttpResponse.json({
-      observations: [
-        { date: '2026-03-18', value: '4.25' },
-      ],
     })
   }),
 ]

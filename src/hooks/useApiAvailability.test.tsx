@@ -38,7 +38,7 @@ describe('useApiAvailability', () => {
 
   it('returns false for intl-gold when gold API fails with no cache', async () => {
     server.use(
-      http.get('*/XAU/USD', () => HttpResponse.error()),
+      http.get('*/api/gold-price', () => HttpResponse.error()),
     )
     const { result } = renderHook(() => useApiAvailability(), { wrapper: createWrapper() })
     await waitFor(() => {
@@ -49,7 +49,7 @@ describe('useApiAvailability', () => {
 
   it('returns false for intl-gold/silver when exchange rate API fails with no cache', async () => {
     server.use(
-      http.get('*/v6/*/latest/USD', () => HttpResponse.error()),
+      http.get('*/api/exchange-rate', () => HttpResponse.error()),
     )
     const { result } = renderHook(() => useApiAvailability(), { wrapper: createWrapper() })
     await waitFor(() => {

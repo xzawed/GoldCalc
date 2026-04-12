@@ -1,5 +1,5 @@
 // server.js — Railway 프로덕션 서버
-// Vite 빌드 결과(dist/) 정적 파일 서빙 + 국내 금시세 API 프록시
+// Vite 빌드 결과(dist/) 정적 파일 서빙 + API 프록시 (API 키는 서버사이드 전용)
 
 import express from 'express'
 import { fileURLToPath } from 'url'
@@ -104,6 +104,104 @@ app.get('/api/domestic-gold', async (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
     return res.status(500).json({ error: message })
+  }
+})
+
+// ─── 금시세 프록시 (GoldAPI.io) ────────────────────────────────────────────
+
+const GOLD_API_BASE = process.env.GOLD_API_URL || 'https://www.goldapi.io/api'
+
+app.options('/api/gold-price', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+app.options('/api/gold-history', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+
+app.get('/api/gold-price', async (_req, res) => {
+  const apiKey = process.env.GOLD_API_KEY
+  if (!apiKey) return res.status(503).json({ error: 'GOLD_API_KEY 미설정' })
+  try {
+    const response = await fetch(`${GOLD_API_BASE}/XAU/USD`, {
+      headers: { 'x-access-token': apiKey },
+    })
+    if (!response.ok) throw new Error(`GoldAPI ${response.status}`)
+    setCorsHeaders(res)
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200')
+    return res.status(200).json(await response.json())
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
+  }
+})
+
+app.get('/api/gold-history', async (req, res) => {
+  const apiKey = process.env.GOLD_API_KEY
+  if (!apiKey) return res.status(503).json({ error: 'GOLD_API_KEY 미설정' })
+  const { date } = req.query
+  if (!date || !isValidDate(String(date))) {
+    return res.status(400).json({ error: 'date는 YYYYMMDD 형식이어야 합니다.' })
+  }
+  try {
+    const response = await fetch(`${GOLD_API_BASE}/XAU/USD/${date}`, {
+      headers: { 'x-access-token': apiKey },
+    })
+    if (!response.ok) throw new Error(`GoldAPI ${response.status}`)
+    setCorsHeaders(res)
+    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=172800')
+    return res.status(200).json(await response.json())
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
+  }
+})
+
+// ─── 환율 프록시 (ExchangeRate-API) ────────────────────────────────────────
+
+const EXCHANGE_RATE_BASE = process.env.EXCHANGE_RATE_API_URL || 'https://v6.exchangerate-api.com/v6'
+
+app.options('/api/exchange-rate', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+
+app.get('/api/exchange-rate', async (_req, res) => {
+  const apiKey = process.env.EXCHANGE_RATE_API_KEY
+  if (!apiKey) return res.status(503).json({ error: 'EXCHANGE_RATE_API_KEY 미설정' })
+  try {
+    const response = await fetch(`${EXCHANGE_RATE_BASE}/${apiKey}/latest/USD`)
+    if (!response.ok) throw new Error(`ExchangeRate-API ${response.status}`)
+    setCorsHeaders(res)
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=7200')
+    return res.status(200).json(await response.json())
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
+  }
+})
+
+// ─── 시장 신호 프록시 (FRED + Alpha Vantage) ────────────────────────────────
+
+app.options('/api/market-signals/treasury', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+app.options('/api/market-signals/vix', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+
+app.get('/api/market-signals/treasury', async (_req, res) => {
+  const apiKey = process.env.FRED_API_KEY
+  if (!apiKey) return res.status(503).json({ error: 'FRED_API_KEY 미설정' })
+  try {
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${apiKey}&file_type=json&limit=1&sort_order=desc`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`FRED API ${response.status}`)
+    setCorsHeaders(res)
+    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=172800')
+    return res.status(200).json(await response.json())
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
+  }
+})
+
+app.get('/api/market-signals/vix', async (_req, res) => {
+  const apiKey = process.env.ALPHA_VANTAGE_KEY
+  if (!apiKey) return res.status(503).json({ error: 'ALPHA_VANTAGE_KEY 미설정' })
+  try {
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=VIX&apikey=${apiKey}`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`Alpha Vantage ${response.status}`)
+    setCorsHeaders(res)
+    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=172800')
+    return res.status(200).json(await response.json())
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
   }
 })
 

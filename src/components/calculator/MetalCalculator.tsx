@@ -64,8 +64,8 @@ export default function MetalCalculator({ metal }: MetalCalculatorProps) {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-sm font-medium">단위 선택</p>
-        <UnitSelector value={unit} onChange={setUnit} />
+        <span id="unit-selector-label" className="text-sm font-medium block">단위 선택</span>
+        <UnitSelector value={unit} onChange={setUnit} labelId="unit-selector-label" />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">순도 선택</label>

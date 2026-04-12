@@ -74,8 +74,8 @@ function DomesticCalculator() {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-sm font-medium">단위 선택</p>
-        <UnitSelector value={unit} onChange={setUnit} />
+        <span id="domestic-gold-unit-label" className="text-sm font-medium block">단위 선택</span>
+        <UnitSelector value={unit} onChange={setUnit} labelId="domestic-gold-unit-label" />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">순도 선택</label>
@@ -296,8 +296,10 @@ export default function DomesticGoldSection() {
                 {PERIOD_OPTIONS.map(({ key, label }) => (
                   <button
                     key={key}
+                    id={`domestic-gold-tab-${key}`}
                     role="tab"
                     aria-selected={period === key}
+                    aria-controls="domestic-gold-tabpanel"
                     onClick={() => setPeriod(key)}
                     data-testid={`domestic-period-tab-${key}`}
                     className={cn(
@@ -313,7 +315,11 @@ export default function DomesticGoldSection() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent
+            id="domestic-gold-tabpanel"
+            role="tabpanel"
+            aria-labelledby={`domestic-gold-tab-${period}`}
+          >
             <DomesticHistoryContent period={period} />
           </CardContent>
         </Card>

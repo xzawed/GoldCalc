@@ -34,10 +34,7 @@ export function useGoldPrice({ enabled = true }: UseGoldPriceOptions = {}) {
 
       try {
         // 2. API 호출
-        const data = await apiFetch<GoldAPIRaw>(
-          `${import.meta.env.VITE_GOLD_API_URL}/XAU/USD`,
-          { 'x-access-token': import.meta.env.VITE_GOLD_API_KEY }
-        )
+        const data = await apiFetch<GoldAPIRaw>('/api/gold-price')
         const result: GoldPriceResult = {
           priceUSD: data.price,
           changePercent: data.chp,

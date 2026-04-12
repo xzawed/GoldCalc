@@ -79,8 +79,8 @@ function DomesticSilverCalculator() {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-sm font-medium">단위 선택</p>
-        <UnitSelector value={unit} onChange={setUnit} />
+        <span id="domestic-silver-unit-label" className="text-sm font-medium block">단위 선택</span>
+        <UnitSelector value={unit} onChange={setUnit} labelId="domestic-silver-unit-label" />
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">순도 선택</label>
@@ -310,8 +310,10 @@ export default function DomesticSilverSection() {
                 {PERIOD_OPTIONS.map(({ key, label }) => (
                   <button
                     key={key}
+                    id={`domestic-silver-tab-${key}`}
                     role="tab"
                     aria-selected={period === key}
+                    aria-controls="domestic-silver-tabpanel"
                     onClick={() => setPeriod(key)}
                     data-testid={`domestic-silver-period-tab-${key}`}
                     className={cn(
@@ -327,7 +329,11 @@ export default function DomesticSilverSection() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent
+            id="domestic-silver-tabpanel"
+            role="tabpanel"
+            aria-labelledby={`domestic-silver-tab-${period}`}
+          >
             <DomesticSilverHistoryContent period={period} />
           </CardContent>
         </Card>
