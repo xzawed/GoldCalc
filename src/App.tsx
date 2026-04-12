@@ -14,6 +14,7 @@ const HistorySection = lazy(() => import('@/components/history/HistorySection'))
 const ForecastSection = lazy(() => import('@/components/forecast/ForecastSection'))
 const DomesticGoldSection = lazy(() => import('@/components/domestic/DomesticGoldSection'))
 const DomesticSilverSection = lazy(() => import('@/components/domestic/DomesticSilverSection'))
+const NewsSection = lazy(() => import('@/components/news/NewsSection'))
 
 function SectionSkeleton() {
   return (
@@ -76,6 +77,10 @@ export default function App() {
             </Suspense>
           </>
         )}
+
+        <Suspense fallback={<SectionSkeleton />}>
+          <NewsSection />
+        </Suspense>
       </main>
 
       <Footer />
