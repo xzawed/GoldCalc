@@ -1,0 +1,14 @@
+# nixpacks.toml — Railway 빌드 환경 명시
+# supabase/functions/ 폴더의 Deno 파일로 인해 nixpacks가 Deno 프로젝트로 오감지하는 것을 방지
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "node server.js"
