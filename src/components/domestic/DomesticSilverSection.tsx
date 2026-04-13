@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import type { WeightUnit, SilverPurity, Period, HistoryEntry } from '@/types/gold'
-import { PERIOD_OPTIONS } from '@/types/gold'
+import { getSupportedPeriodOptions } from '@/types/gold'
 
 // ─── 계산기 ───
 
@@ -276,7 +276,8 @@ function DomesticSilverHistoryContent({ period }: { period: Period }) {
 // ─── 메인 섹션 ───
 
 export default function DomesticSilverSection() {
-  const [period, setPeriod] = useState<Period>('1W')
+  const supportedOptions = getSupportedPeriodOptions('domestic-silver')
+  const [period, setPeriod] = useState<Period>(supportedOptions[0].key)
 
   return (
     <div className="space-y-6">
@@ -307,7 +308,7 @@ export default function DomesticSilverSection() {
                 aria-label="기간 선택"
                 className="inline-flex items-center gap-0.5 p-1 rounded-lg bg-muted/50 border border-border/40"
               >
-                {PERIOD_OPTIONS.map(({ key, label }) => (
+                {supportedOptions.map(({ key, label }) => (
                   <button
                     key={key}
                     id={`domestic-silver-tab-${key}`}

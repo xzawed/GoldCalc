@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ErrorAlert } from '@/components/common/ErrorAlert'
 import { ChartSkeleton } from './ChartSkeleton'
@@ -11,8 +11,8 @@ import { useExchangeRate } from '@/hooks/useExchangeRate'
 import { calcPeriodSummary } from '@/utils/historyCalc'
 import { METAL_LABELS } from '@/utils/metalCalc'
 import { cn } from '@/lib/utils'
-import type { Metal } from '@/types/gold'
-import { PERIOD_OPTIONS } from '@/types/gold'
+import type { Metal, AssetTab, Period } from '@/types/gold'
+import { getSupportedPeriodOptions } from '@/types/gold'
 
 interface HistorySectionProps {
   metal?: Metal
@@ -46,7 +46,17 @@ function HistoryContent({ period, metal }: { period: Period; metal: Metal }) {
 }
 
 export default function HistorySection({ metal = 'gold' }: HistorySectionProps) {
-  const [period, setPeriod] = useState<Period>('1W')
+  const tabKey: AssetTab = metal === 'gold' ? 'intl-gold' : 'intl-silver'
+  const supportedOptions = getSupportedPeriodOptions(tabKey)
+  const [period, setPeriod] = useState<Period>(supportedOptions[0].key)
+
+  // 탭(metal) 전환 시 현재 period가 새 탭에서 미지원이면 첫 번째 지원 period로 전환
+  useEffect(() => {
+    if (!supportedOptions.some((opt) => opt.key === period)) {
+      setPeriod(supportedOptions[0].key)
+    }
+  }, [metal, period, supportedOptions])
+
   const metalName = METAL_LABELS[metal]
   const isGold = metal === 'gold'
 
@@ -68,7 +78,7 @@ export default function HistorySection({ metal = 'gold' }: HistorySectionProps) 
               aria-label="기간 선택"
               className="inline-flex items-center gap-0.5 p-1 rounded-lg bg-muted/50 border border-border/40"
             >
-              {PERIOD_OPTIONS.map(({ key, label }) => (
+              {supportedOptions.map(({ key, label }) => (
                 <button
                   key={key}
                   id={`history-tab-${key}`}

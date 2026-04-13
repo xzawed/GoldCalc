@@ -99,6 +99,8 @@ export interface AssetTabConfig {
   label: string
   metal: Metal
   source: PriceSource
+  /** 이 탭이 실제로 표현 가능한 히스토리 기간 목록. 데이터 소스 제약 반영. */
+  supportedPeriods: Period[]
 }
 
 // data.go.kr 국내 금시세 API 응답 (useDomesticGoldPrice, useDomesticGoldHistory 공용)
@@ -128,8 +130,15 @@ export interface DataGoKrResponse {
 }
 
 export const ASSET_TABS: AssetTabConfig[] = [
-  { key: 'intl-gold', label: '국제 금', metal: 'gold', source: 'international' },
-  { key: 'intl-silver', label: '국제 은', metal: 'silver', source: 'international' },
-  { key: 'domestic-gold', label: '국내 금', metal: 'gold', source: 'domestic' },
-  { key: 'domestic-silver', label: '국내 은', metal: 'silver', source: 'domestic' },
+  { key: 'intl-gold',       label: '국제 금', metal: 'gold',   source: 'international', supportedPeriods: ['1W', '1M', '3M', '1Y'] },
+  { key: 'intl-silver',     label: '국제 은', metal: 'silver', source: 'international', supportedPeriods: ['1M', '1Y'] },
+  { key: 'domestic-gold',   label: '국내 금', metal: 'gold',   source: 'domestic',      supportedPeriods: ['1W', '1M', '3M', '1Y'] },
+  { key: 'domestic-silver', label: '국내 은', metal: 'silver', source: 'domestic',      supportedPeriods: ['1M', '1Y'] },
 ]
+
+/** 탭에서 실제 표현 가능한 PERIOD_OPTIONS만 필터링하여 반환 */
+export function getSupportedPeriodOptions(tabKey: AssetTab) {
+  const config = ASSET_TABS.find((t) => t.key === tabKey)
+  if (!config) return PERIOD_OPTIONS
+  return PERIOD_OPTIONS.filter((opt) => config.supportedPeriods.includes(opt.key))
+}
