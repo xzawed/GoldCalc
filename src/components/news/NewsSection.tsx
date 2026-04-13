@@ -1,10 +1,11 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import { ko } from 'date-fns/locale'
+import { Heart, MessageCircle, Repeat2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { loadXWidgets, renderXWidgets } from '@/utils/xWidgets'
-import { DEFAULT_X_EMBED_URL, X_WIDGET_OPTIONS } from '@/constants/newsDefaults'
-
-type LoadState = 'loading' | 'loaded' | 'error'
+import { useXNews } from '@/hooks/useXNews'
+import { DEFAULT_X_LIST_PUBLIC_URL } from '@/constants/newsDefaults'
+import type { XTweet } from '@/types/xNews'
 
 function NewsSkeleton() {
   return (
@@ -30,12 +31,12 @@ function ErrorFallback() {
       data-testid="news-error"
     >
       <p className="text-muted-foreground text-sm">
-        X(Twitter) 타임라인을 불러올 수 없습니다.
+        X 소식을 불러올 수 없습니다.
         <br />
-        네트워크 환경에 따라 X 임베드가 차단될 수 있습니다.
+        잠시 후 다시 시도해 주세요.
       </p>
       <a
-        href={DEFAULT_X_EMBED_URL}
+        href={DEFAULT_X_LIST_PUBLIC_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-muted/50 border border-border/40 text-sm font-medium text-foreground hover:bg-muted transition-colors"
@@ -47,42 +48,67 @@ function ErrorFallback() {
   )
 }
 
+function TweetCard({ tweet }: { tweet: XTweet }) {
+  const tweetUrl = `https://x.com/${tweet.author.username}/status/${tweet.id}`
+  const timeAgo = formatDistanceToNow(new Date(tweet.created_at), {
+    addSuffix: true,
+    locale: ko,
+  })
+
+  return (
+    <article
+      className="flex gap-3 py-3 border-b border-border/40 last:border-b-0"
+      data-testid={`news-item-${tweet.id}`}
+    >
+      <img
+        src={tweet.author.profile_image_url}
+        alt={`${tweet.author.name} 프로필`}
+        className="h-10 w-10 rounded-full shrink-0 object-cover"
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-sm font-semibold truncate">{tweet.author.name}</span>
+          {tweet.author.verified && (
+            <span
+              className="text-blue-400 text-xs"
+              aria-label="인증된 계정"
+            >
+              ✓
+            </span>
+          )}
+          <span className="text-xs text-muted-foreground">@{tweet.author.username}</span>
+          <span className="text-xs text-muted-foreground ml-auto">{timeAgo}</span>
+        </div>
+        <a
+          href={tweetUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${tweet.author.name}의 트윗: ${tweet.text}`}
+          className="block mt-1 text-sm text-foreground/90 line-clamp-4 hover:text-foreground transition-colors"
+        >
+          {tweet.text}
+        </a>
+        <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Heart className="h-3 w-3" aria-hidden="true" />
+            {tweet.metrics.like_count.toLocaleString('ko-KR')}
+          </span>
+          <span className="flex items-center gap-1">
+            <Repeat2 className="h-3 w-3" aria-hidden="true" />
+            {tweet.metrics.retweet_count.toLocaleString('ko-KR')}
+          </span>
+          <span className="flex items-center gap-1">
+            <MessageCircle className="h-3 w-3" aria-hidden="true" />
+            {tweet.metrics.reply_count.toLocaleString('ko-KR')}
+          </span>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 export default function NewsSection() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [state, setState] = useState<LoadState>('loading')
-
-  const initWidget = useCallback(async () => {
-    try {
-      await loadXWidgets()
-
-      // widgets.js 로드 후 twttr가 준비될 때까지 대기
-      if (containerRef.current) {
-        renderXWidgets(containerRef.current)
-      }
-
-      // 위젯 렌더링 확인: iframe이 생성되고 실제 콘텐츠가 로드되었는지 판단 (최대 10초 대기)
-      let attempts = 0
-      const check = setInterval(() => {
-        attempts++
-        const iframe = containerRef.current?.querySelector('iframe') as HTMLIFrameElement | null
-        if (iframe && iframe.offsetHeight > 0) {
-          setState('loaded')
-          clearInterval(check)
-        } else if (attempts >= 20) {
-          // iframe이 있지만 콘텐츠 미로드, 또는 iframe 자체가 없는 경우
-          setState(iframe ? 'loaded' : 'error')
-          clearInterval(check)
-        }
-      }, 500)
-    } catch (error) {
-      console.error('[NewsSection] X 위젯 초기화 실패:', error)
-      setState('error')
-    }
-  }, [])
-
-  useEffect(() => {
-    initWidget()
-  }, [initWidget])
+  const { data: tweets, isLoading, isError } = useXNews()
 
   return (
     <section aria-labelledby="news-title" data-testid="news-section">
@@ -97,7 +123,7 @@ export default function NewsSection() {
               금융 소식
             </CardTitle>
             <a
-              href={DEFAULT_X_EMBED_URL}
+              href={DEFAULT_X_LIST_PUBLIC_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -108,29 +134,17 @@ export default function NewsSection() {
         </CardHeader>
 
         <CardContent>
-          {state === 'error' ? (
-            <ErrorFallback />
-          ) : (
-            <>
-              {state === 'loading' && <NewsSkeleton />}
-              <div
-                ref={containerRef}
-                className={state === 'loading' ? 'sr-only' : ''}
-                style={{ maxHeight: X_WIDGET_OPTIONS.height, overflowY: 'auto' }}
-              >
-                <a
-                  className="twitter-timeline"
-                  href={DEFAULT_X_EMBED_URL}
-                  data-height={X_WIDGET_OPTIONS.height}
-                  data-theme={X_WIDGET_OPTIONS.theme}
-                  data-chrome={X_WIDGET_OPTIONS.chrome}
-                  data-lang={X_WIDGET_OPTIONS.lang}
-                  data-tweet-limit={X_WIDGET_OPTIONS.tweetLimit}
-                >
-                  타임라인을 불러오는 중입니다
-                </a>
-              </div>
-            </>
+          {isLoading && <NewsSkeleton />}
+          {(isError || (!isLoading && (!tweets || tweets.length === 0))) && <ErrorFallback />}
+          {tweets && tweets.length > 0 && (
+            <div
+              data-testid="news-list"
+              style={{ maxHeight: 600, overflowY: 'auto' }}
+            >
+              {tweets.map(tweet => (
+                <TweetCard key={tweet.id} tweet={tweet} />
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

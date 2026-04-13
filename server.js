@@ -205,6 +205,33 @@ app.get('/api/market-signals/vix', async (_req, res) => {
   }
 })
 
+// ─── X(Twitter) 금융 소식 프록시 ────────────────────────────────────────────
+
+const X_LIST_ID = process.env.X_LIST_ID || '2043297405916090454'
+
+app.options('/api/x-news', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+
+app.get('/api/x-news', async (_req, res) => {
+  const bearer = process.env.X_BEARER_TOKEN
+  if (!bearer) return res.status(503).json({ error: 'X_BEARER_TOKEN 미설정' })
+  try {
+    const url =
+      `https://api.twitter.com/2/lists/${X_LIST_ID}/tweets` +
+      `?max_results=10` +
+      `&tweet.fields=created_at,public_metrics,author_id` +
+      `&expansions=author_id` +
+      `&user.fields=name,username,profile_image_url,verified`
+    const response = await fetch(url, { headers: { Authorization: `Bearer ${bearer}` } })
+    if (!response.ok) throw new Error(`X API ${response.status}`)
+    setCorsHeaders(res)
+    // X API Basic 한도(월 10K reads) 고려 — 15분 캐시 + 30분 SWR
+    res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=1800')
+    return res.status(200).json(await response.json())
+  } catch (error) {
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
+  }
+})
+
 // 헬스체크 — 모니터링 도구(UptimeRobot 등) 연동용
 app.get('/health', (_req, res) => {
   setCorsHeaders(res)

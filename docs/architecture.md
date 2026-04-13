@@ -23,7 +23,7 @@
 │  시장 신호 카드 + 면책 문구 (항상 표시)   │
 ├─────────────────────────────────────────┤
 │  [4구역] 금융 소식 (모든 탭 공통)          │ ← news/
-│  X(Twitter) 리스트 타임라인 임베드        │
+│  useXNews → TweetCard 리스트             │
 └─────────────────────────────────────────┘
 ```
 
@@ -77,7 +77,7 @@ src/components/
 │   ├── TrendBadge.tsx
 │   └── Disclaimer.tsx       — 면책 문구 (항상 렌더링, 조건부 금지)
 └── news/
-    └── NewsSection.tsx      — X(Twitter) widgets.js 임베드
+    └── NewsSection.tsx      — useXNews 기반 TweetCard 리스트 (로딩/에러/빈상태 분기)
 ```
 
 ---
@@ -93,6 +93,7 @@ src/components/
 /api/exchange-rate       → useExchangeRate   → MetalCalculator, HistorySection, PriceBar
 /api/market-signals/*    → useMarketSignals  → MarketSignals
 /api/domestic-gold       → useDomesticGoldPrice, useDomesticGoldHistory → DomesticGoldSection
+/api/x-news              → useXNews          → NewsSection
 
 gold-api.com (직접)      → useSilverPrice    → MetalCalculator (silver)
 gold-api.com (직접)      → useSilverHistory  → HistorySection (silver)
@@ -137,5 +138,5 @@ fetchWithFailover() [src/utils/fetchWithFailover.ts]
 | `src/utils/fetchWithFailover.ts` | Railway→Supabase Circuit Breaker |
 | `src/utils/format.ts` | KRW 표시, 날짜 포맷, 등락률 포맷 |
 | `src/constants/api.ts` | `GOLD_API_COM_URL` 등 API URL 상수 |
-| `src/constants/newsDefaults.ts` | X 임베드 URL, 위젯 옵션 |
+| `src/constants/newsDefaults.ts` | `DEFAULT_X_LIST_PUBLIC_URL` — X 리스트 공개 링크 |
 | `src/types/gold.ts` | 공유 타입: Metal, Period, GoldPurity, PERIOD_OPTIONS 등 |

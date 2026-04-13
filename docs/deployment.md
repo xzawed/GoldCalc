@@ -31,6 +31,8 @@ Railway 대시보드 → 서비스 → Variables에서 등록:
 | `DATA_GO_KR_API_KEY` | 필수 | 공공데이터포털 serviceKey |
 | `FRED_API_KEY` | 선택 | FRED API 키 |
 | `ALPHA_VANTAGE_KEY` | 선택 | Alpha Vantage 키 |
+| `X_BEARER_TOKEN` | 선택 | X(Twitter) API v2 Bearer Token (미설정 시 뉴스 비활성) |
+| `X_LIST_ID` | 선택 | X 리스트 ID (기본값: `2043297405916090454`) |
 | `VITE_SUPABASE_URL` | 선택 | Supabase 프로젝트 URL (페일오버용) |
 
 변수 저장 즉시 Railway가 자동 재배포.

@@ -57,6 +57,15 @@
 페일오버: Railway → Supabase Edge Function (src/utils/fetchWithFailover.ts)
 ```
 
+### `GET /api/x-news`
+```
+응답: XTweet[] (src/types/xNews.ts)
+  - id, text, created_at, author: { name, username, profile_image_url, verified }
+  - public_metrics: { like_count, retweet_count, reply_count }
+캐시: s-maxage=900, stale-while-revalidate=1800
+에러: 503 (X_BEARER_TOKEN 미설정), 500
+```
+
 ### `GET /health`
 ```
 응답: { status: "ok", timestamp: string }
@@ -95,6 +104,8 @@
 | `DATA_GO_KR_API_KEY` | 필수 | 공공데이터포털 serviceKey |
 | `FRED_API_KEY` | 선택 | FRED API 키 (미설정 시 시장신호 비활성) |
 | `ALPHA_VANTAGE_KEY` | 선택 | Alpha Vantage 키 (미설정 시 VIX 비활성) |
+| `X_BEARER_TOKEN` | 선택 | X(Twitter) API v2 Bearer Token (미설정 시 뉴스 비활성) |
+| `X_LIST_ID` | 선택 | X 리스트 ID (기본값: `2043297405916090454`) |
 | `PORT` | 자동 | Railway 자동 주입 |
 
 ### 클라이언트사이드 (`VITE_` 접두사, 번들에 포함)
@@ -117,5 +128,6 @@
 | `useDomesticGoldPrice` | `['domesticGoldPrice']` | 5분 | fetchWithFailover |
 | `useDomesticGoldHistory` | `['domesticGoldHistory', period]` | 24시간 | fetchWithFailover |
 | `useMarketSignals` | `['marketSignals']` | 24시간 | — |
+| `useXNews` | `['xNews']` | 15분 | retry: 1 |
 
 **캐시 폴백 순서:** dailyCache(localStorage 당일) → API 호출 → 실패 시 persistentCache(마지막 수신값)

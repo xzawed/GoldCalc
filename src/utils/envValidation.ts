@@ -32,6 +32,7 @@ export function validateEnv(): void {
   )
 
   if (missingOptional.length > 0) {
+    // eslint-disable-next-line no-console
     console.info(
       '[GoldCalc] 선택 환경변수 미설정 (해당 기능 비활성):',
       missingOptional.map(({ key, feature }) => `\n  - ${key}: ${feature}`).join('')
