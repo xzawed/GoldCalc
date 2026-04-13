@@ -1,6 +1,7 @@
 // server.js — Railway 프로덕션 서버
 // Vite 빌드 결과(dist/) 정적 파일 서빙 + API 프록시 (API 키는 서버사이드 전용)
 
+import 'dotenv/config' // 로컬 .env 자동 로드 (Railway는 env 자동 주입이라 no-op)
 import express from 'express'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
