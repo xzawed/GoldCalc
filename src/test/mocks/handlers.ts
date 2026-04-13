@@ -101,29 +101,25 @@ export const handlers = [
     })
   }),
 
-  // X news proxy (/api/x-news)
-  http.get('*/api/x-news', () => {
+  // Financial news proxy (/api/news) — Google News RSS 기반
+  http.get('*/api/news', () => {
     return HttpResponse.json({
-      data: [
+      items: [
         {
-          id: '1',
-          text: '금 가격 사상 최고치 경신 — 온스당 $3,200 돌파',
-          created_at: '2026-04-13T00:00:00Z',
-          author_id: 'u1',
-          public_metrics: { like_count: 100, retweet_count: 20, reply_count: 5 },
+          id: 'https://example.com/news/1',
+          title: '금 가격 사상 최고치 경신 — 온스당 $3,200 돌파',
+          link: 'https://example.com/news/1',
+          pubDate: 'Mon, 13 Apr 2026 00:00:00 GMT',
+          source: '연합뉴스',
+        },
+        {
+          id: 'https://example.com/news/2',
+          title: '달러 약세에 금값 상승세 지속',
+          link: 'https://example.com/news/2',
+          pubDate: 'Mon, 13 Apr 2026 01:00:00 GMT',
+          source: '매일경제',
         },
       ],
-      includes: {
-        users: [
-          {
-            id: 'u1',
-            name: 'Gold Telegraph',
-            username: 'GoldTelegraph_',
-            profile_image_url: 'https://example.com/avatar.jpg',
-            verified: true,
-          },
-        ],
-      },
     })
   }),
 ]

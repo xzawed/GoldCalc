@@ -57,13 +57,15 @@
 페일오버: Railway → Supabase Edge Function (src/utils/fetchWithFailover.ts)
 ```
 
-### `GET /api/x-news`
+### `GET /api/news`
 ```
-응답: XTweet[] (src/types/xNews.ts)
-  - id, text, created_at, author: { name, username, profile_image_url, verified }
-  - public_metrics: { like_count, retweet_count, reply_count }
-캐시: s-maxage=900, stale-while-revalidate=1800
-에러: 503 (X_BEARER_TOKEN 미설정), 500
+응답: { items: NewsItem[] }  (src/types/news.ts)
+  NewsItem: { id, title, link, pubDate, source }
+소스: 구글 뉴스 RSS (검색어: "금 시세 OR 금값 OR gold price", ko/KR)
+인증: 불필요 (공개 RSS)
+파싱: server.js의 parseRssItems (정규식 기반, 최대 15개)
+캐시: s-maxage=1800, stale-while-revalidate=3600
+에러: 500 (RSS 피드 접근 실패 또는 파싱 에러)
 ```
 
 ### `GET /health`
@@ -83,6 +85,7 @@
 | ExchangeRate-API | `https://v6.exchangerate-api.com/v6/{KEY}/latest/USD` | URL 포함 | 월 1,500회 |
 | gold-api.com (은) | `https://api.gold-api.com/price/XAG` | 불필요 | 무제한 |
 | gold-api.com (은 히스토리) | `https://api.gold-api.com/price/XAG?date={YYYYMMDD}` | 불필요 | 무제한 |
+| 구글 뉴스 RSS | `https://news.google.com/rss/search?q=...&hl=ko&gl=KR&ceid=KR:ko` | 불필요 | 무제한 |
 | FRED | `https://api.stlouisfed.org/fred/series/observations` | URL 파라미터 | 무제한 |
 | Alpha Vantage | `https://www.alphavantage.co/query` | URL 파라미터 | 일 25회 |
 | data.go.kr | `https://apis.data.go.kr/1160100/...` | serviceKey | 일 1,000회 |
@@ -104,9 +107,9 @@
 | `DATA_GO_KR_API_KEY` | 필수 | 공공데이터포털 serviceKey |
 | `FRED_API_KEY` | 선택 | FRED API 키 (미설정 시 시장신호 비활성) |
 | `ALPHA_VANTAGE_KEY` | 선택 | Alpha Vantage 키 (미설정 시 VIX 비활성) |
-| `X_BEARER_TOKEN` | 선택 | X(Twitter) API v2 Bearer Token (미설정 시 뉴스 비활성) |
-| `X_LIST_ID` | 선택 | X 리스트 ID (기본값: `2043297405916090454`) |
 | `PORT` | 자동 | Railway 자동 주입 |
+
+**금융 뉴스:** 구글 뉴스 RSS는 인증 불필요 — 환경변수 없음.
 
 ### 클라이언트사이드 (`VITE_` 접두사, 번들에 포함)
 
@@ -128,6 +131,6 @@
 | `useDomesticGoldPrice` | `['domesticGoldPrice']` | 5분 | fetchWithFailover |
 | `useDomesticGoldHistory` | `['domesticGoldHistory', period]` | 24시간 | fetchWithFailover |
 | `useMarketSignals` | `['marketSignals']` | 24시간 | — |
-| `useXNews` | `['xNews']` | 15분 | retry: 1 |
+| `useFinancialNews` | `['financialNews']` | 30분 | retry: 1, server cache 1800s |
 
 **캐시 폴백 순서:** dailyCache(localStorage 당일) → API 호출 → 실패 시 persistentCache(마지막 수신값)

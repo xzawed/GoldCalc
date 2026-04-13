@@ -205,28 +205,65 @@ app.get('/api/market-signals/vix', async (_req, res) => {
   }
 })
 
-// ─── X(Twitter) 금융 소식 프록시 ────────────────────────────────────────────
+// ─── 금융 뉴스 프록시 (구글 뉴스 RSS, 무료·인증 불필요) ─────────────────────
 
-const X_LIST_ID = process.env.X_LIST_ID || '2043297405916090454'
+const NEWS_RSS_URL =
+  'https://news.google.com/rss/search?q=' +
+  encodeURIComponent('금 시세 OR 금값 OR gold price') +
+  '&hl=ko&gl=KR&ceid=KR:ko'
 
-app.options('/api/x-news', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+/** 간단한 RSS <item> 파서 — Google News RSS 전용 */
+function parseRssItems(xml) {
+  const items = []
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g
+  let match
+  while ((match = itemRegex.exec(xml)) !== null) {
+    const block = match[1]
+    const title = extractTag(block, 'title')
+    const link = extractTag(block, 'link')
+    const pubDate = extractTag(block, 'pubDate')
+    const source = extractTag(block, 'source')
+    if (title && link) {
+      items.push({
+        id: link,
+        title: decodeHtml(title),
+        link,
+        pubDate,
+        source: source ? decodeHtml(source) : '',
+      })
+    }
+  }
+  return items
+}
 
-app.get('/api/x-news', async (_req, res) => {
-  const bearer = process.env.X_BEARER_TOKEN
-  if (!bearer) return res.status(503).json({ error: 'X_BEARER_TOKEN 미설정' })
+function extractTag(xml, tag) {
+  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`)
+  const m = re.exec(xml)
+  if (!m) return ''
+  return m[1].replace(/^<!\[CDATA\[/, '').replace(/\]\]>$/, '').trim()
+}
+
+function decodeHtml(s) {
+  return s
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+}
+
+app.options('/api/news', (_req, res) => { setCorsHeaders(res); res.status(204).end() })
+
+app.get('/api/news', async (_req, res) => {
   try {
-    const url =
-      `https://api.twitter.com/2/lists/${X_LIST_ID}/tweets` +
-      `?max_results=10` +
-      `&tweet.fields=created_at,public_metrics,author_id` +
-      `&expansions=author_id` +
-      `&user.fields=name,username,profile_image_url,verified`
-    const response = await fetch(url, { headers: { Authorization: `Bearer ${bearer}` } })
-    if (!response.ok) throw new Error(`X API ${response.status}`)
+    const response = await fetch(NEWS_RSS_URL)
+    if (!response.ok) throw new Error(`Google News RSS ${response.status}`)
+    const xml = await response.text()
+    const items = parseRssItems(xml).slice(0, 15)
     setCorsHeaders(res)
-    // X API Basic 한도(월 10K reads) 고려 — 15분 캐시 + 30분 SWR
-    res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=1800')
-    return res.status(200).json(await response.json())
+    res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600')
+    return res.status(200).json({ items })
   } catch (error) {
     return res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' })
   }
