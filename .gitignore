@@ -28,3 +28,4 @@ Thumbs.db
 
 # Playwright MCP 임시 파일
 .playwright-mcp/
+*.png
