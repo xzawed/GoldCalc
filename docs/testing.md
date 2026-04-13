@@ -45,20 +45,26 @@ src/test/
 ## MSW 핸들러 패턴
 
 ### 기본 핸들러 (`src/test/mocks/handlers.ts`)
-프록시 URL을 인터셉트. 외부 API URL 직접 사용 금지.
+프록시 URL을 인터셉트. 외부 API URL 직접 사용 금지 (ADR-003).
 
 ```ts
 import { http, HttpResponse } from 'msw'
 
 export const handlers = [
   http.get('*/api/gold-price', () =>
-    HttpResponse.json({ price: 2650.5, chp: 0.85, timestamp: 1742278800 })
+    HttpResponse.json({ price: 2650.5, chp: 0.85, timestamp: 1742278800, prev_close_price: 2628.0 })
   ),
   http.get('*/api/gold-history', () =>
-    HttpResponse.json({ timestamp: 1742192400, close: 2640.0 })
+    HttpResponse.json({ timestamp: 1742192400, close: 2640.0, prev_close_price: 2620.0 })
   ),
   http.get('*/api/exchange-rate', () =>
     HttpResponse.json({ result: 'success', conversion_rates: { KRW: 1380 } })
+  ),
+  http.get('*/api/silver-price', () =>
+    HttpResponse.json({ price: 33.5, chp: 0.45, timestamp: 1742278800 })
+  ),
+  http.get('*/api/silver-history', () =>
+    HttpResponse.json({ timestamp: 1742192400, close: 33.0, prev_close_price: 32.8 })
   ),
   http.get('*/api/domestic-gold', () => HttpResponse.json({ /* DataGoKrResponse */ })),
   http.get('*/api/market-signals/treasury', () =>
@@ -67,8 +73,8 @@ export const handlers = [
   http.get('*/api/market-signals/vix', () =>
     HttpResponse.json({ 'Global Quote': { '05. price': '18.50', '10. change percent': '1.25%' } })
   ),
-  http.get('https://api.gold-api.com/price/XAG', () =>
-    HttpResponse.json({ price: 33.5, symbol: 'XAG', updatedAt: '2026-03-25T10:00:00Z' })
+  http.get('*/api/news', () =>
+    HttpResponse.json({ items: [{ id: '1', title: '금 시세 뉴스', link: 'https://example.com', pubDate: '...', source: '연합뉴스' }] })
   ),
 ]
 ```
@@ -141,11 +147,15 @@ describe('calcPricePerGram', () => {
 |------|---------|------|
 | `src/utils/goldCalc.test.ts` | 18 | ✅ |
 | `src/utils/historyCalc.test.ts` | 18 | ✅ |
+| `src/utils/forecast.test.ts` | 28 | ✅ |
 | `src/utils/format.test.ts` | 12 | ✅ |
 | `src/utils/dailyCache.test.ts` | 9 | ✅ |
 | `src/utils/persistentCache.test.ts` | 7 | ✅ |
 | `src/utils/__tests__/fetchWithFailover.test.ts` | 6 | ✅ |
 | `src/hooks/useApiAvailability.test.tsx` | 6 | ✅ |
+| `src/hooks/__tests__/useFinancialNews.test.tsx` | 4 | ✅ |
+| `src/components/news/__tests__/NewsSection.test.tsx` | 8 | ✅ |
+| `src/test/functional/calculator.test.tsx` | 10 | ✅ |
 | `src/test/functional/history.test.tsx` | 7 | ✅ |
 | `src/test/functional/forecast.test.tsx` | 9 | ✅ |
-| **합계** | **136** | **전체 통과** |
+| **합계** | **142** | **전체 통과** |
