@@ -72,7 +72,7 @@ describe('useApiAvailability', () => {
 
   it('returns false for intl-silver/domestic-silver when silver API fails with no cache', async () => {
     server.use(
-      http.get('https://api.gold-api.com/price/XAG', () => HttpResponse.error()),
+      http.get('*/api/silver-price', () => HttpResponse.error()),
     )
     const { result } = renderHook(() => useApiAvailability(), { wrapper: createWrapper() })
     await waitFor(() => {

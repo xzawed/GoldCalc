@@ -28,27 +28,21 @@ export const handlers = [
     })
   }),
 
-  // gold-api.com silver price (current)
-  http.get('https://api.gold-api.com/price/XAG', ({ request }) => {
-    const url = new URL(request.url)
-    if (url.searchParams.get('date')) return // let history handler handle it
+  // Silver price proxy (/api/silver-price)
+  http.get('*/api/silver-price', () => {
     return HttpResponse.json({
-      name: 'Silver',
       price: 33.5,
-      symbol: 'XAG',
-      updatedAt: '2026-03-25T10:00:00Z',
-      updatedAtReadable: 'just now',
+      chp: 0.45,
+      timestamp: 1742278800,
     })
   }),
 
-  // gold-api.com silver history (date param)
-  http.get('https://api.gold-api.com/price/XAG', () => {
+  // Silver history proxy (/api/silver-history?date=YYYYMMDD)
+  http.get('*/api/silver-history', () => {
     return HttpResponse.json({
-      name: 'Silver',
-      price: 33.0,
-      symbol: 'XAG',
-      updatedAt: '2026-03-24T10:00:00Z',
-      updatedAtReadable: 'yesterday',
+      timestamp: 1742192400,
+      close: 33.0,
+      prev_close_price: 32.8,
     })
   }),
 

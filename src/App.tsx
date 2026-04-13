@@ -61,9 +61,14 @@ export default function App() {
             <DomesticGoldSection />
           </Suspense>
         ) : activeTab === 'domestic-silver' ? (
-          <Suspense fallback={<SectionSkeleton />}>
-            <DomesticSilverSection />
-          </Suspense>
+          <>
+            <Suspense fallback={<SectionSkeleton />}>
+              <DomesticSilverSection />
+            </Suspense>
+            <Suspense fallback={<SectionSkeleton />}>
+              <ForecastSection metal="silver" />
+            </Suspense>
+          </>
         ) : (
           <>
             <Suspense fallback={<SectionSkeleton />}>

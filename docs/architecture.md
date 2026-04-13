@@ -36,7 +36,7 @@
 | `intl-gold` | `MetalCalculator metal="gold"` | `HistorySection metal="gold"` | `ForecastSection metal="gold"` |
 | `intl-silver` | `MetalCalculator metal="silver"` | `HistorySection metal="silver"` | `ForecastSection metal="silver"` |
 | `domestic-gold` | `DomesticGoldSection` (내장) | `DomesticGoldSection` (내장) | 없음 |
-| `domestic-silver` | `DomesticSilverSection` (내장) | `DomesticSilverSection` (내장) | 없음 |
+| `domestic-silver` | `DomesticSilverSection` (내장) | `DomesticSilverSection` (내장) | `ForecastSection metal="silver"` (국제 XAG 기반) |
 
 **탭 자동 숨김:** `useApiAvailability` → 데이터 없는 탭 비활성화  
 **소스:** `src/App.tsx`, `src/components/layout/AssetNav.tsx`
@@ -90,13 +90,12 @@ src/components/
   ▼ (server.js 프록시 경유)
 /api/gold-price          → useGoldPrice      → MetalCalculator, PriceBar
 /api/gold-history        → useGoldHistory    → HistorySection
+/api/silver-price        → useSilverPrice    → MetalCalculator (silver), PriceBar
+/api/silver-history      → useSilverHistory  → HistorySection (silver), ForecastSection (silver)
 /api/exchange-rate       → useExchangeRate   → MetalCalculator, HistorySection, PriceBar
 /api/market-signals/*    → useMarketSignals  → MarketSignals
 /api/domestic-gold       → useDomesticGoldPrice, useDomesticGoldHistory → DomesticGoldSection
 /api/news (Google RSS)   → useFinancialNews  → NewsSection
-
-gold-api.com (직접)      → useSilverPrice    → MetalCalculator (silver)
-gold-api.com (직접)      → useSilverHistory  → HistorySection (silver)
 
 TanStack Query (캐시)
   │

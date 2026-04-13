@@ -2,14 +2,11 @@ import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '@/utils/api'
 import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
 import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
-import { GOLD_API_COM_URL } from '@/constants/api'
 
-interface GoldApiComPriceRaw {
-  name: string
+interface GoldApiPriceRaw {
   price: number
-  symbol: string
-  updatedAt: string
-  updatedAtReadable: string
+  chp: number
+  timestamp: number
 }
 
 export interface SilverPriceResult {
@@ -36,14 +33,12 @@ export function useSilverPrice({ enabled = true }: UseSilverPriceOptions = {}) {
       if (cached) return cached
 
       try {
-        // 2. API 호출
-        const data = await apiFetch<GoldApiComPriceRaw>(
-          `${GOLD_API_COM_URL}/price/XAG`,
-        )
+        // 2. API 호출 (서버 프록시 경유)
+        const data = await apiFetch<GoldApiPriceRaw>('/api/silver-price')
         const result: SilverPriceResult = {
           priceUSD: data.price,
-          changePercent: 0,
-          updatedAt: data.updatedAt,
+          changePercent: data.chp ?? 0,
+          updatedAt: new Date(data.timestamp * 1000).toISOString(),
         }
         setDailyCache(CACHE_KEY, result)
         setPersistentCache(CACHE_KEY, result)

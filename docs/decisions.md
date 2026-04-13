@@ -28,7 +28,7 @@
 **결정:** GoldAPI.io, ExchangeRate-API, FRED, Alpha Vantage 호출을 모두 `server.js` 프록시 경유  
 **이유:** `VITE_*` 환경변수는 클라이언트 번들에 포함되어 브라우저에서 추출 가능. API 키 도용 위험.  
 **구현:** Railway 서버사이드 변수(`VITE_` 접두사 없음) → `server.js`에서 읽어 프록시.  
-**예외:** `gold-api.com` 은시세는 인증 불필요 → 클라이언트 직접 호출 허용.
+**예외:** 없음. 은시세도 ADR-009에 따라 GoldAPI.io 프록시 경유로 통일.
 
 ---
 
@@ -79,3 +79,17 @@
 **결정:** 모든 금/은 계산 로직을 `src/utils/metalCalc.ts` 순수 함수로 분리  
 **이유:** 컴포넌트에 직접 작성 시 테스트 불가, 중복 발생, 수정 시 누락 위험.  
 **규칙:** 컴포넌트에서 직접 금 가격 계산 절대 금지. `metalCalc.ts` 함수만 사용.
+
+
+---
+
+## ADR-009: 은시세 히스토리 데이터 소스를 GoldAPI.io XAG 프록시로 이관
+
+**상태:** 확정 (2026-04-13)  
+**결정:** `useSilverPrice`/`useSilverHistory`의 `api.gold-api.com` 직접 호출을 `server.js` 프록시(`/api/silver-price`, `/api/silver-history`)로 교체. 기존 `GOLD_API_KEY` 재사용.  
+**이유:**
+1. `api.gold-api.com/price/XAG?date=YYYYMMDD` 히스토리 엔드포인트가 404 반환 (E2E 확인) → 은 히스토리 데이터 0개 → ForecastSection 예측 불가
+2. 대안 Stooq(`stooq.com/q/d/l/?s=xagusd`)가 캡차 기반 API 키 등록 요구로 "무인증 CSV" 특성 소멸
+3. GoldAPI.io `/XAG/USD/{YYYYMMDD}` 엔드포인트 존재 확인 (HTTP 403, 엔드포인트 살아있음), 기존 `GOLD_API_KEY`로 XAG 호출 가능 → 새 env 변수 불필요  
+**효과:** 은 히스토리 데이터 복구 → `intl-silver` 예측 차트 정상화. `domestic-silver` 탭에 `ForecastSection metal="silver"` 라우팅 추가.  
+**기각:** Stooq CSV (API 키 등록 필요), metals.dev 무료 티어 (새 env 변수 필요, 월 한도 불명확), Yahoo Finance SI=F (TOS 위반 가능성)

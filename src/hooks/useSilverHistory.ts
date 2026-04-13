@@ -5,13 +5,11 @@ import { getDailyCache, setDailyCache } from '@/utils/dailyCache'
 import { getPersistentCache, setPersistentCache } from '@/utils/persistentCache'
 import { format, subDays } from 'date-fns'
 import type { Period, HistoryEntry } from '@/types/gold'
-import { GOLD_API_COM_URL } from '@/constants/api'
 
-interface GoldApiComHistoryRaw {
-  name: string
-  price: number
-  symbol: string
-  updatedAt: string
+interface GoldApiHistoryRaw {
+  timestamp: number
+  price?: number
+  close?: number
 }
 
 function getDatesForPeriod(period: Period): string[] {
@@ -25,7 +23,7 @@ function getDatesForPeriod(period: Period): string[] {
   const { days, step } = config[period]
   const dates: string[] = []
   for (let i = days; i >= 1; i -= step) {
-    dates.push(format(subDays(today, i), 'yyyy-MM-dd'))
+    dates.push(format(subDays(today, i), 'yyyyMMdd'))
   }
   return dates
 }
@@ -35,13 +33,11 @@ async function fetchDayHistory(
   exchangeRate: number,
 ): Promise<HistoryEntry | null> {
   try {
-    const data = await apiFetch<GoldApiComHistoryRaw>(
-      `${GOLD_API_COM_URL}/price/XAG?date=${date}`,
-    )
-    const priceUSD = data.price
+    const data = await apiFetch<GoldApiHistoryRaw>(`/api/silver-history?date=${date}`)
+    const priceUSD = data.price ?? data.close
     if (!priceUSD) return null
     return {
-      date,
+      date: `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`,
       priceUSD,
       priceKRW: Math.round(calcPricePerGram(priceUSD, exchangeRate) * 0.999),
     }
@@ -66,7 +62,7 @@ export function useSilverHistory(period: Period, exchangeRate: number, { enabled
       if (cached) return cached
 
       try {
-        // 2. API 호출
+        // 2. API 호출 (서버 프록시 경유)
         const dates = getDatesForPeriod(period)
         const results = await Promise.all(
           dates.map((date) => fetchDayHistory(date, exchangeRate)),

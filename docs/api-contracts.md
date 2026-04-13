@@ -21,6 +21,21 @@
 에러: 400 (date 형식 불일치), 503, 500
 ```
 
+### `GET /api/silver-price`
+```
+응답: { price: number, chp: number, timestamp: number }
+캐시: s-maxage=3600, stale-while-revalidate=7200
+에러: 503 (GOLD_API_KEY 미설정), 500 (상위 API 실패)
+```
+
+### `GET /api/silver-history?date=YYYYMMDD`
+```
+파라미터: date — 필수, YYYYMMDD 형식 (정규식 검증: /^\d{8}$/)
+응답: { timestamp: number, close?: number, price?: number }
+캐시: s-maxage=86400, stale-while-revalidate=172800
+에러: 400 (date 형식 불일치), 503, 500
+```
+
 ### `GET /api/exchange-rate`
 ```
 응답: { result: string, conversion_rates: { KRW: number } }
@@ -83,14 +98,14 @@
 | GoldAPI.io | `https://www.goldapi.io/api/XAU/USD` | `x-access-token` 헤더 | 월 한도 있음 |
 | GoldAPI.io (히스토리) | `https://www.goldapi.io/api/XAU/USD/{YYYYMMDD}` | 동일 | 동일 |
 | ExchangeRate-API | `https://v6.exchangerate-api.com/v6/{KEY}/latest/USD` | URL 포함 | 월 1,500회 |
-| gold-api.com (은) | `https://api.gold-api.com/price/XAG` | 불필요 | 무제한 |
-| gold-api.com (은 히스토리) | `https://api.gold-api.com/price/XAG?date={YYYYMMDD}` | 불필요 | 무제한 |
+| GoldAPI.io (은) | `https://www.goldapi.io/api/XAG/USD` | `x-access-token` 헤더 | 월 한도 있음 |
+| GoldAPI.io (은 히스토리) | `https://www.goldapi.io/api/XAG/USD/{YYYYMMDD}` | 동일 | 동일 |
 | 구글 뉴스 RSS | `https://news.google.com/rss/search?q=...&hl=ko&gl=KR&ceid=KR:ko` | 불필요 | 무제한 |
 | FRED | `https://api.stlouisfed.org/fred/series/observations` | URL 파라미터 | 무제한 |
 | Alpha Vantage | `https://www.alphavantage.co/query` | URL 파라미터 | 일 25회 |
 | data.go.kr | `https://apis.data.go.kr/1160100/...` | serviceKey | 일 1,000회 |
 
-**silver 호출 경로:** `useSilverPrice`, `useSilverHistory` → gold-api.com 직접 (인증 불필요, 클라이언트에서 직접 호출 허용)
+**silver 호출 경로:** `useSilverPrice`, `useSilverHistory` → `/api/silver-price`, `/api/silver-history` → GoldAPI.io XAG (GOLD_API_KEY 재사용, 서버 프록시 경유)
 
 ---
 
@@ -125,8 +140,8 @@
 |----|---------|----------|------|
 | `useGoldPrice` | `['goldPrice']` | 1시간 | dailyCache + persistentCache |
 | `useGoldHistory` | `['goldHistory', period]` | 24시간 | dailyCache + persistentCache |
-| `useSilverPrice` | `['silverPrice']` | 1시간 | dailyCache + persistentCache |
-| `useSilverHistory` | `['silverHistory', period]` | 24시간 | dailyCache + persistentCache |
+| `useSilverPrice` | `['silverPrice']` | 1시간 | dailyCache + persistentCache, `/api/silver-price` 프록시 |
+| `useSilverHistory` | `['silverHistory', period]` | 24시간 | dailyCache + persistentCache, `/api/silver-history` 프록시 |
 | `useExchangeRate` | `['exchangeRate']` | 1시간 | dailyCache + persistentCache |
 | `useDomesticGoldPrice` | `['domesticGoldPrice']` | 5분 | fetchWithFailover |
 | `useDomesticGoldHistory` | `['domesticGoldHistory', period]` | 24시간 | fetchWithFailover |
