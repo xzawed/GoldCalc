@@ -3,22 +3,36 @@ name: quality-check
 description: GoldCalc 품질 검증 — lint + type-check + test + build를 순서대로 실행하고 결과를 요약 보고한다. 기능 구현 완료 후 또는 커밋 전에 호출한다.
 ---
 
-아래 순서로 품질 검증을 실행한다. 각 단계가 실패하면 즉시 원인을 진단하고 수정한 뒤 다음 단계로 넘어간다.
+## 호출 방법
 
-## 실행 순서
+이 파일은 Claude Code `Skill` 도구가 아닌 **`Read` 도구로 직접 읽어 실행**한다.
+프로젝트 스킬(`.claude/skills/`)은 superpowers 플러그인에 등록된 스킬과 달리 자동 발견되지 않는다.
 
-1. **lint** — `npm run lint`
-   - 오류가 있으면 해당 파일·라인을 수정한다.
+실행 시 `npm run check` 단일 명령으로 전체 검증을 수행한다:
 
-2. **type-check** — `npm run type-check`
-   - 타입 에러가 있으면 원인 파악 후 수정한다.
+```bash
+npm run check
+# 내부 순서: lint → type-check → test → build
+```
 
-3. **test** — `npm test`
-   - 실패한 테스트가 있으면 원인 분석 후 수정한다.
-   - 목표: 기존 대비 테스트 수가 줄지 않을 것.
+단계별로 실행해야 하는 경우:
 
-4. **build** — `npm run build`
-   - 빌드 에러가 있으면 수정한다.
+```bash
+npm run lint
+npm run type-check
+npm test
+npm run build
+```
+
+---
+
+## 실행 절차
+
+1. **`npm run check`** 실행
+2. 실패 단계 발생 시 → 즉시 원인 진단 및 수정 후 재실행
+3. 목표: 기존 대비 테스트 수가 줄지 않을 것 (현재 기준: 142개)
+
+---
 
 ## 보고 형식
 
