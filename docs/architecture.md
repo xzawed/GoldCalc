@@ -18,7 +18,7 @@
 │  기간 탭: 1W | 1M | 3M | 1Y             │
 │  요약 배지 + 라인 차트 + 날짜별 테이블    │
 ├─────────────────────────────────────────┤
-│  [3구역] 시세 예측 (국제 금/은만)          │ ← forecast/
+│  [3구역] 시세 예측 (국제 금/은 + 국내은)    │ ← forecast/
 │  과거(실선) + 예측(점선) + 신뢰구간       │
 │  시장 신호 카드 + 면책 문구 (항상 표시)   │
 ├─────────────────────────────────────────┤
@@ -136,6 +136,5 @@ fetchWithFailover() [src/utils/fetchWithFailover.ts]
 | `src/utils/persistentCache.ts` | 마지막 수신 데이터 영속 보관 (만료 없음) |
 | `src/utils/fetchWithFailover.ts` | Railway→Supabase Circuit Breaker |
 | `src/utils/format.ts` | KRW 표시, 날짜 포맷, 등락률 포맷 |
-| `src/constants/api.ts` | `GOLD_API_COM_URL` 등 API URL 상수 |
 | `src/constants/newsDefaults.ts` | `DEFAULT_NEWS_PUBLIC_URL` — 구글 뉴스 "금 시세" 검색 링크 |
 | `src/types/gold.ts` | 공유 타입: Metal, Period, GoldPurity, PERIOD_OPTIONS 등 |
