@@ -72,3 +72,28 @@ npm run type-check    # TypeScript 검사
 
 - **SCAManager**: `git push` 시 자동 코드리뷰 → `http://scamanager-production.up.railway.app`
 - 최초 설치: `bash .scamanager/install-hook.sh` (1회)
+
+---
+
+## Claude 자율 관리 권한
+
+Claude는 업무 수행 효율과 정확성을 높이기 위해 다음 항목을 **자율적으로 등록·수정·삭제**할 수 있다.
+
+### 스킬 (`.claude/skills/`)
+- 프로젝트 전용 반복 작업을 스킬 파일로 추출하여 등록·수정·삭제
+- 파일 위치: `.claude/skills/<skill-name>.md`
+- 형식: frontmatter(`name`, `description`) + 마크다운 지시문
+
+### 에이전트
+- 특정 작업에 최적화된 subagent 타입·프롬프트를 Agent 도구 호출 시 자율 결정
+- 반복되는 에이전트 패턴은 스킬로 추출하여 재사용
+
+### 훅 (`.claude/settings.json`)
+- 도구 실행 전후 자동화가 필요한 경우 프로젝트 레벨 훅 추가·수정·삭제
+- 이벤트: `PreToolUse`, `PostToolUse`, `Stop`, `Notification`
+- 훅 변경 시 목적과 트리거를 주석 또는 커밋 메시지로 명시
+
+### 원칙
+- 관리 대상은 **프로젝트 레벨** (`.claude/`) 우선 — 사용자 전역(`~/.claude/settings.json`) 수정은 명시적 요청 시에만
+- 스킬·훅 추가 후 목적을 사용자에게 간략히 보고
+- 더 이상 불필요한 스킬·훅은 능동적으로 삭제하여 관리 부담 최소화
